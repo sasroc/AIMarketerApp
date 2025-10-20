@@ -1,0 +1,30 @@
+import SwiftUI
+import PhotosUI
+
+enum MediaType: String, Codable {
+    case image
+    case video
+}
+
+struct MediaItem: Identifiable, Equatable {
+    let id: String
+    let type: MediaType
+    var thumbnail: UIImage?
+    var localURL: URL?
+    var cloudURL: String?
+    let createdAt: Date
+    
+    init(id: String = UUID().uuidString, type: MediaType, thumbnail: UIImage? = nil, localURL: URL? = nil, cloudURL: String? = nil, createdAt: Date = Date()) {
+        self.id = id
+        self.type = type
+        self.thumbnail = thumbnail
+        self.localURL = localURL
+        self.cloudURL = cloudURL
+        self.createdAt = createdAt
+    }
+    
+    static func == (lhs: MediaItem, rhs: MediaItem) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+

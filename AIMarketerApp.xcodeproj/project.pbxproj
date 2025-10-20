@@ -1,0 +1,521 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A0000001 /* AIMarketerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000001 /* AIMarketerApp.swift */; };
+		A0000002 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000002 /* RootView.swift */; };
+		A0000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0000003 /* Assets.xcassets */; };
+		A0000004 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000004 /* User.swift */; };
+		A0000005 /* MediaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000005 /* MediaItem.swift */; };
+		A0000006 /* MarketingPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000006 /* MarketingPlan.swift */; };
+		A0000007 /* PostSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000007 /* PostSchedule.swift */; };
+		A0000008 /* GeneratedPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000008 /* GeneratedPost.swift */; };
+		A0000009 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000009 /* AuthenticationService.swift */; };
+		A000000A /* ContentGenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000A /* ContentGenerationService.swift */; };
+		A000000B /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000B /* AuthenticationViewModel.swift */; };
+		A000000C /* CampaignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000C /* CampaignViewModel.swift */; };
+		A000000D /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000D /* WelcomeView.swift */; };
+		A000000E /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000E /* SignInView.swift */; };
+		A000000F /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000F /* SignUpView.swift */; };
+		A0000010 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000010 /* MainTabView.swift */; };
+		A0000011 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000011 /* HomeView.swift */; };
+		A0000012 /* CreateCampaignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000012 /* CreateCampaignView.swift */; };
+		A0000013 /* MediaUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000013 /* MediaUploadSection.swift */; };
+		A0000014 /* MarketingPlanSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000014 /* MarketingPlanSection.swift */; };
+		A0000015 /* SchedulingSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000015 /* SchedulingSection.swift */; };
+		A0000016 /* ContentGuidelinesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000016 /* ContentGuidelinesSection.swift */; };
+		A0000017 /* GeneratedPostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000017 /* GeneratedPostsView.swift */; };
+		A0000018 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000018 /* ScheduleView.swift */; };
+		A0000019 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000019 /* ProfileView.swift */; };
+		A000001A /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001A /* CustomTextField.swift */; };
+		A000001B /* PostPreviewCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001B /* PostPreviewCard.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B0000001 /* AIMarketerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIMarketerApp.swift; sourceTree = "<group>"; };
+		B0000002 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		B0000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B0000004 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B0000005 /* MediaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaItem.swift; sourceTree = "<group>"; };
+		B0000006 /* MarketingPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketingPlan.swift; sourceTree = "<group>"; };
+		B0000007 /* PostSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSchedule.swift; sourceTree = "<group>"; };
+		B0000008 /* GeneratedPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedPost.swift; sourceTree = "<group>"; };
+		B0000009 /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
+		B000000A /* ContentGenerationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGenerationService.swift; sourceTree = "<group>"; };
+		B000000B /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
+		B000000C /* CampaignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignViewModel.swift; sourceTree = "<group>"; };
+		B000000D /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		B000000E /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		B000000F /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		B0000010 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		B0000011 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B0000012 /* CreateCampaignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCampaignView.swift; sourceTree = "<group>"; };
+		B0000013 /* MediaUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaUploadSection.swift; sourceTree = "<group>"; };
+		B0000014 /* MarketingPlanSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketingPlanSection.swift; sourceTree = "<group>"; };
+		B0000015 /* SchedulingSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulingSection.swift; sourceTree = "<group>"; };
+		B0000016 /* ContentGuidelinesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGuidelinesSection.swift; sourceTree = "<group>"; };
+		B0000017 /* GeneratedPostsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedPostsView.swift; sourceTree = "<group>"; };
+		B0000018 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
+		B0000019 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		B000001A /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
+		B000001B /* PostPreviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPreviewCard.swift; sourceTree = "<group>"; };
+		B000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C0000001 /* AIMarketerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIMarketerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D0000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E0000001 = {
+			isa = PBXGroup;
+			children = (
+				E0000002 /* AIMarketerApp */,
+				E0000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E0000002 /* AIMarketerApp */ = {
+			isa = PBXGroup;
+			children = (
+				B0000001 /* AIMarketerApp.swift */,
+				B000001C /* Info.plist */,
+				B0000003 /* Assets.xcassets */,
+				E0000004 /* Models */,
+				E0000005 /* Views */,
+				E0000006 /* ViewModels */,
+				E0000007 /* Services */,
+			);
+			path = AIMarketerApp;
+			sourceTree = "<group>";
+		};
+		E0000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C0000001 /* AIMarketerApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E0000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B0000004 /* User.swift */,
+				B0000005 /* MediaItem.swift */,
+				B0000006 /* MarketingPlan.swift */,
+				B0000007 /* PostSchedule.swift */,
+				B0000008 /* GeneratedPost.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E0000005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B0000002 /* RootView.swift */,
+				B0000010 /* MainTabView.swift */,
+				E0000008 /* Authentication */,
+				E0000009 /* Home */,
+				E000000A /* Campaign */,
+				E000000B /* Schedule */,
+				E000000C /* Profile */,
+				E000000D /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E0000006 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B000000B /* AuthenticationViewModel.swift */,
+				B000000C /* CampaignViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		E0000007 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B0000009 /* AuthenticationService.swift */,
+				B000000A /* ContentGenerationService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E0000008 /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				B000000D /* WelcomeView.swift */,
+				B000000E /* SignInView.swift */,
+				B000000F /* SignUpView.swift */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
+		E0000009 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				B0000011 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		E000000A /* Campaign */ = {
+			isa = PBXGroup;
+			children = (
+				B0000012 /* CreateCampaignView.swift */,
+				B0000013 /* MediaUploadSection.swift */,
+				B0000014 /* MarketingPlanSection.swift */,
+				B0000015 /* SchedulingSection.swift */,
+				B0000016 /* ContentGuidelinesSection.swift */,
+				B0000017 /* GeneratedPostsView.swift */,
+			);
+			path = Campaign;
+			sourceTree = "<group>";
+		};
+		E000000B /* Schedule */ = {
+			isa = PBXGroup;
+			children = (
+				B0000018 /* ScheduleView.swift */,
+			);
+			path = Schedule;
+			sourceTree = "<group>";
+		};
+		E000000C /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				B0000019 /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		E000000D /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B000001A /* CustomTextField.swift */,
+				B000001B /* PostPreviewCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F0000001 /* AIMarketerApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0000002 /* Build configuration list for PBXNativeTarget "AIMarketerApp" */;
+			buildPhases = (
+				F0000003 /* Sources */,
+				D0000001 /* Frameworks */,
+				F0000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIMarketerApp;
+			productName = AIMarketerApp;
+			productReference = C0000001 /* AIMarketerApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		G0000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F0000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = G0000002 /* Build configuration list for PBXProject "AIMarketerApp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E0000001;
+			productRefGroup = E0000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F0000001 /* AIMarketerApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F0000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000003 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F0000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000001 /* AIMarketerApp.swift in Sources */,
+				A0000002 /* RootView.swift in Sources */,
+				A0000004 /* User.swift in Sources */,
+				A0000005 /* MediaItem.swift in Sources */,
+				A0000006 /* MarketingPlan.swift in Sources */,
+				A0000007 /* PostSchedule.swift in Sources */,
+				A0000008 /* GeneratedPost.swift in Sources */,
+				A0000009 /* AuthenticationService.swift in Sources */,
+				A000000A /* ContentGenerationService.swift in Sources */,
+				A000000B /* AuthenticationViewModel.swift in Sources */,
+				A000000C /* CampaignViewModel.swift in Sources */,
+				A000000D /* WelcomeView.swift in Sources */,
+				A000000E /* SignInView.swift in Sources */,
+				A000000F /* SignUpView.swift in Sources */,
+				A0000010 /* MainTabView.swift in Sources */,
+				A0000011 /* HomeView.swift in Sources */,
+				A0000012 /* CreateCampaignView.swift in Sources */,
+				A0000013 /* MediaUploadSection.swift in Sources */,
+				A0000014 /* MarketingPlanSection.swift in Sources */,
+				A0000015 /* SchedulingSection.swift in Sources */,
+				A0000016 /* ContentGuidelinesSection.swift in Sources */,
+				A0000017 /* GeneratedPostsView.swift in Sources */,
+				A0000018 /* ScheduleView.swift in Sources */,
+				A0000019 /* ProfileView.swift in Sources */,
+				A000001A /* CustomTextField.swift in Sources */,
+				A000001B /* PostPreviewCard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		H0000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		H0000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		H0000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NVXYLP37X2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AIMarketerApp/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aimarketer.AIMarketerApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		H0000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NVXYLP37X2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AIMarketerApp/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aimarketer.AIMarketerApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F0000002 /* Build configuration list for PBXNativeTarget "AIMarketerApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				H0000003 /* Debug */,
+				H0000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		G0000002 /* Build configuration list for PBXProject "AIMarketerApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				H0000001 /* Debug */,
+				H0000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = G0000001 /* Project object */;
+}
