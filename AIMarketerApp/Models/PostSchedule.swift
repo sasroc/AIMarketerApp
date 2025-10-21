@@ -1,15 +1,19 @@
 import Foundation
 
 struct PostSchedule: Codable {
-    var postsPerWeek: Int
+    var startDate: Date?
+    var endDate: Date?
     var selectedDays: Set<WeekDay>
     var postTimes: [WeekDay: [Date]]
+    var postsPerDay: [WeekDay: Int]
     var contentGuidelines: String
     
-    init(postsPerWeek: Int = 3, selectedDays: Set<WeekDay> = [], postTimes: [WeekDay: [Date]] = [:], contentGuidelines: String = "") {
-        self.postsPerWeek = postsPerWeek
+    init(startDate: Date? = nil, endDate: Date? = nil, selectedDays: Set<WeekDay> = [], postTimes: [WeekDay: [Date]] = [:], postsPerDay: [WeekDay: Int] = [:], contentGuidelines: String = "") {
+        self.startDate = startDate
+        self.endDate = endDate
         self.selectedDays = selectedDays
         self.postTimes = postTimes
+        self.postsPerDay = postsPerDay
         self.contentGuidelines = contentGuidelines
     }
 }
@@ -24,6 +28,32 @@ enum WeekDay: Int, Codable, CaseIterable, Identifiable {
     case sunday = 7
     
     var id: Int { rawValue }
+    
+    // Calendar.component(.weekday) returns: 1=Sunday, 2=Monday, 3=Tuesday, etc.
+    var calendarWeekday: Int {
+        switch self {
+        case .sunday: return 1
+        case .monday: return 2
+        case .tuesday: return 3
+        case .wednesday: return 4
+        case .thursday: return 5
+        case .friday: return 6
+        case .saturday: return 7
+        }
+    }
+    
+    static func from(calendarWeekday: Int) -> WeekDay? {
+        switch calendarWeekday {
+        case 1: return .sunday
+        case 2: return .monday
+        case 3: return .tuesday
+        case 4: return .wednesday
+        case 5: return .thursday
+        case 6: return .friday
+        case 7: return .saturday
+        default: return nil
+        }
+    }
     
     var displayName: String {
         switch self {

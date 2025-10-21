@@ -32,52 +32,53 @@ struct CreateCampaignView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Navigation buttons
-                        HStack(spacing: 16) {
-                            if campaignViewModel.currentStep > 0 {
-                                Button(action: previousStep) {
-                                    HStack {
-                                        Image(systemName: "chevron.left")
-                                        Text("Back")
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.2))
-                                    .foregroundColor(.white)
-                                    .cornerRadius(12)
+                        // Navigation button
+                        Button(action: nextStep) {
+                            HStack {
+                                Text(campaignViewModel.currentStep == 3 ? "Generate Posts" : "Next")
+                                if campaignViewModel.currentStep < 3 {
+                                    Image(systemName: "chevron.right")
                                 }
                             }
-                            
-                            Button(action: nextStep) {
-                                HStack {
-                                    Text(campaignViewModel.currentStep == 3 ? "Generate Posts" : "Next")
-                                    if campaignViewModel.currentStep < 3 {
-                                        Image(systemName: "chevron.right")
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(
-                                    LinearGradient(
-                                        colors: [Color.purple, Color.blue],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.purple, Color.blue],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
                                 )
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                            }
-                            .disabled(!canProceed)
-                            .opacity(canProceed ? 1 : 0.5)
+                            )
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
                         }
+                        .disabled(!canProceed)
+                        .opacity(canProceed ? 1 : 0.5)
                         .padding(.horizontal)
                         .padding(.bottom, 32)
                     }
+                    .simultaneousGesture(
+                        TapGesture().onEnded { _ in
+                            hideKeyboard()
+                        }
+                    )
                 }
             }
             .navigationTitle("Create Campaign")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if campaignViewModel.currentStep > 0 {
+                        Button(action: previousStep) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                Text("Back")
+                            }
+                            .foregroundColor(.purple)
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { campaignViewModel.resetCampaign() }) {
                         Image(systemName: "arrow.clockwise")
@@ -98,7 +99,9 @@ struct CreateCampaignView: View {
         case 1:
             return !campaignViewModel.marketingPlan.description.isEmpty
         case 2:
-            return !campaignViewModel.schedule.selectedDays.isEmpty
+            return campaignViewModel.schedule.startDate != nil && 
+                   campaignViewModel.schedule.endDate != nil && 
+                   !campaignViewModel.schedule.selectedDays.isEmpty
         case 3:
             return true
         default:
@@ -129,6 +132,10 @@ struct CreateCampaignView: View {
                 showingGeneratedPosts = true
             }
         }
+    }
+    
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 

@@ -7,9 +7,10 @@ An AI-powered marketing app that helps you create and schedule social media cont
 - 🎨 **Beautiful SwiftUI Interface** - Modern, intuitive design with dark mode support
 - 📸 **Media Upload** - Select up to 10 images or videos from your photo library
 - 📝 **Marketing Plan** - Define your campaign goals, target audience, and content tone
-- 📅 **Smart Scheduling** - Schedule posts for specific days and times
+- 📅 **Smart Scheduling** - Schedule posts with custom date ranges, multiple posting days, and flexible times
 - 🤖 **AI Content Generation** - Generate engaging post captions using AI
-- ✏️ **Post Editing** - Review and edit generated posts before scheduling
+- ✏️ **Advanced Post Editing** - Edit post captions with cursor positioning and keyboard support
+- 🗑️ **Post Management** - Delete posts with confirmation dialogs
 - 📊 **Dashboard** - Track upcoming and posted content
 - 👤 **User Authentication** - Secure login and account management
 
@@ -61,7 +62,7 @@ AIMarketerApp/
 1. **Sign Up/Sign In** - Create an account or sign in to get started
 2. **Upload Media** - Select images or videos from your photo library
 3. **Define Marketing Plan** - Describe your campaign, target audience, and choose a content tone
-4. **Set Schedule** - Choose how many posts per week and select posting days and times
+4. **Set Schedule** - Choose custom date ranges, select posting days, and set multiple times per day
 5. **Add Guidelines** - Specify what the AI should include in your posts
 6. **Generate Posts** - Let AI create engaging captions for your content
 7. **Review & Edit** - Edit any captions before scheduling

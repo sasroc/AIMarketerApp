@@ -3,6 +3,53 @@ import SwiftUI
 struct ContentGuidelinesSection: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     
+    private var totalPostsToGenerate: Int {
+        guard let startDate = campaignViewModel.schedule.startDate,
+              let endDate = campaignViewModel.schedule.endDate else {
+            return 0
+        }
+        
+        let calendar = Calendar.current
+        var currentDate = startDate
+        var totalPosts = 0
+        
+        // Iterate through each day in the range
+        while currentDate <= endDate {
+            let weekdayComponent = calendar.component(.weekday, from: currentDate)
+            
+            // Check if this day is in the selected days
+            if let weekDay = WeekDay.from(calendarWeekday: weekdayComponent),
+               campaignViewModel.schedule.selectedDays.contains(weekDay) {
+                totalPosts += campaignViewModel.schedule.postsPerDay[weekDay] ?? 1
+            }
+            
+            // Move to next day
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+                break
+            }
+            currentDate = nextDate
+        }
+        
+        return totalPosts
+    }
+    
+    private var dateRangeDuration: String {
+        guard let startDate = campaignViewModel.schedule.startDate,
+              let endDate = campaignViewModel.schedule.endDate else {
+            return "Not set"
+        }
+        
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        let weeks = Int(ceil(Double(days) / 7.0))
+        
+        if weeks == 1 {
+            return "1 week"
+        } else {
+            return "\(weeks) weeks"
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             // Header
@@ -61,8 +108,8 @@ struct ContentGuidelinesSection: View {
                     
                     SummaryRow(
                         icon: "calendar",
-                        label: "Posts per Week",
-                        value: "\(campaignViewModel.schedule.postsPerWeek)"
+                        label: "Campaign Duration",
+                        value: dateRangeDuration
                     )
                     
                     SummaryRow(
@@ -74,7 +121,7 @@ struct ContentGuidelinesSection: View {
                     SummaryRow(
                         icon: "doc.text",
                         label: "Total Posts to Generate",
-                        value: "\(campaignViewModel.schedule.postsPerWeek * 4)"
+                        value: "\(totalPostsToGenerate)"
                     )
                 }
                 .padding()

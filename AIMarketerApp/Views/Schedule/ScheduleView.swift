@@ -49,23 +49,15 @@ struct ScheduleView: View {
                         ScrollView {
                             LazyVStack(spacing: 16) {
                                 ForEach(filteredPosts) { post in
-                                    PostPreviewCard(post: post)
+                                    EditablePostCard(post: post)
                                         .padding(.horizontal)
-                                        .contextMenu {
-                                            Button(role: .destructive) {
-                                                withAnimation {
-                                                    campaignViewModel.deletePost(post)
-                                                }
-                                            } label: {
-                                                Label("Delete Post", systemImage: "trash")
-                                            }
-                                        }
                                 }
                             }
                             .padding(.vertical)
                         }
                     }
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
             }
             .navigationTitle("Schedule")
             .navigationBarTitleDisplayMode(.inline)

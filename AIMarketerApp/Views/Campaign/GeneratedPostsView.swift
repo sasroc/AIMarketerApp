@@ -114,6 +114,8 @@ struct EditablePostCard: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var isEditing = false
     @State private var editedCaption: String
+    @FocusState private var isTextEditorFocused: Bool
+    @State private var showingDeleteConfirmation = false
     
     init(post: GeneratedPost) {
         self.post = post
@@ -122,8 +124,8 @@ struct EditablePostCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Date
-            HStack {
+            // Date and buttons
+            HStack(spacing: 8) {
                 Image(systemName: "calendar")
                     .foregroundColor(.purple)
                 Text(formattedDate)
@@ -132,30 +134,53 @@ struct EditablePostCard: View {
                 
                 Spacer()
                 
-                Button(action: { isEditing.toggle() }) {
-                    Text(isEditing ? "Done" : "Edit")
-                        .font(.subheadline)
-                        .foregroundColor(.purple)
+                HStack(spacing: 8) {
+                    // Edit button
+                    Button(action: {
+                        toggleEdit()
+                    }) {
+                        Text(isEditing ? "Done" : "Edit")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.purple)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.purple.opacity(0.15))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // Delete button
+                    Button(action: {
+                        showingDeleteConfirmation = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .font(.system(size: 16, weight: .medium))
+                            .padding(8)
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(6)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             
-            // Caption
-            if isEditing {
-                TextEditor(text: $editedCaption)
-                    .frame(minHeight: 100)
-                    .padding(8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                    .scrollContentBackground(.hidden)
-                    .onChange(of: isEditing) { newValue in
-                        if !newValue {
-                            campaignViewModel.updatePostCaption(postId: post.id, newCaption: editedCaption)
-                        }
-                    }
-            } else {
-                Text(post.caption)
-                    .font(.body)
-                    .foregroundColor(.white)
+            // Caption content
+            Group {
+                if isEditing {
+                    SimpleTextEditor(text: $editedCaption)
+                        .frame(maxWidth: .infinity, minHeight: 120, maxHeight: 300)
+                        .focused($isTextEditorFocused)
+                } else {
+                    Text(post.caption)
+                        .font(.body)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             
             // Media preview
@@ -164,21 +189,111 @@ struct EditablePostCard: View {
                 Image(uiImage: thumbnail)
                     .resizable()
                     .scaledToFill()
-                    .frame(height: 200)
                     .frame(maxWidth: .infinity)
+                    .frame(height: 200)
                     .clipped()
                     .cornerRadius(12)
+                    .allowsHitTesting(false)
             }
         }
+        .frame(maxWidth: .infinity)
         .padding()
         .background(Color.gray.opacity(0.1))
         .cornerRadius(16)
+        .alert("Delete Post", isPresented: $showingDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                withAnimation {
+                    campaignViewModel.deletePost(post)
+                }
+            }
+        } message: {
+            Text("Are you sure you'd like to delete this post?")
+        }
+    }
+    
+    private func toggleEdit() {
+        if isEditing {
+            // Save changes and exit edit mode
+            campaignViewModel.updatePostCaption(postId: post.id, newCaption: editedCaption)
+            isTextEditorFocused = false
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isEditing = false
+            }
+        } else {
+            // Enter edit mode
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isEditing = true
+            }
+            
+            // Focus the text editor after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                isTextEditorFocused = true
+            }
+        }
     }
     
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
         return formatter.string(from: post.scheduledDate)
+    }
+}
+
+// Simple TextEditor that works reliably
+struct SimpleTextEditor: UIViewRepresentable {
+    @Binding var text: String
+    
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.backgroundColor = UIColor.clear
+        textView.textColor = UIColor.white
+        textView.font = UIFont.systemFont(ofSize: 16)
+        textView.isScrollEnabled = true
+        textView.isEditable = true
+        textView.isUserInteractionEnabled = true
+        textView.delegate = context.coordinator
+        textView.autocapitalizationType = .sentences
+        textView.autocorrectionType = .yes
+        textView.keyboardAppearance = .dark
+        textView.returnKeyType = .default
+        textView.text = text
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+        textView.textContainer.lineFragmentPadding = 0
+        
+        return textView
+    }
+    
+    func updateUIView(_ textView: UITextView, context: Context) {
+        if textView.text != text {
+            textView.text = text
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UITextViewDelegate {
+        var parent: SimpleTextEditor
+        
+        init(_ parent: SimpleTextEditor) {
+            self.parent = parent
+        }
+        
+        func textViewDidChange(_ textView: UITextView) {
+            parent.text = textView.text
+        }
+        
+        func textViewDidBeginEditing(_ textView: UITextView) {
+            // Move cursor to end when editing starts
+            DispatchQueue.main.async {
+                let endPosition = textView.endOfDocument
+                if let newRange = textView.textRange(from: endPosition, to: endPosition) {
+                    textView.selectedTextRange = newRange
+                }
+            }
+        }
     }
 }
 

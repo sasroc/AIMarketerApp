@@ -15,31 +15,72 @@ class ContentGenerationService {
         try await Task.sleep(nanoseconds: 2_000_000_000)
         
         var posts: [GeneratedPost] = []
-        let numberOfPosts = schedule.postsPerWeek * 4 // 4 weeks worth
         
-        // Generate mock posts
-        for i in 0..<numberOfPosts {
-            let mediaItem = mediaItems[i % mediaItems.count]
-            let caption = generateMockCaption(
-                index: i,
-                marketingPlan: marketingPlan,
-                tone: marketingPlan.tone
-            )
+        // Calculate total number of posts based on date range, days, and posts per day
+        guard let startDate = schedule.startDate, let endDate = schedule.endDate else {
+            return []
+        }
+        
+        let calendar = Calendar.current
+        var currentDate = startDate
+        var mediaIndex = 0
+        
+        // Iterate through each day in the range
+        while currentDate <= endDate {
+            let weekdayComponent = calendar.component(.weekday, from: currentDate)
             
-            // Calculate scheduled date based on selected days
-            let scheduledDate = calculateScheduledDate(
-                for: i,
-                schedule: schedule
-            )
+            // Check if this day is in the selected days
+            if let weekDay = WeekDay.from(calendarWeekday: weekdayComponent),
+               schedule.selectedDays.contains(weekDay) {
+                
+                // Get number of posts for this day
+                let postsForThisDay = schedule.postsPerDay[weekDay] ?? 1
+                let times = schedule.postTimes[weekDay] ?? []
+                
+                // Generate posts for this day
+                for postIndex in 0..<postsForThisDay {
+                    let mediaItem = mediaItems[mediaIndex % mediaItems.count]
+                    let caption = generateMockCaption(
+                        index: mediaIndex,
+                        marketingPlan: marketingPlan,
+                        tone: marketingPlan.tone
+                    )
+                    
+                    // Set the scheduled time
+                    var scheduledDate = currentDate
+                    if postIndex < times.count {
+                        let time = times[postIndex]
+                        let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+                        scheduledDate = calendar.date(bySettingHour: timeComponents.hour ?? 9, minute: timeComponents.minute ?? 0, second: 0, of: currentDate) ?? currentDate
+                    } else if !times.isEmpty {
+                        // Fallback: use first time + offset
+                        let time = times[0]
+                        let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+                        scheduledDate = calendar.date(bySettingHour: timeComponents.hour ?? 9, minute: timeComponents.minute ?? 0, second: 0, of: currentDate) ?? currentDate
+                        scheduledDate = calendar.date(byAdding: .hour, value: postIndex * 2, to: scheduledDate) ?? scheduledDate
+                    } else {
+                        // Default time: 9 AM + offset
+                        scheduledDate = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: currentDate) ?? currentDate
+                        scheduledDate = calendar.date(byAdding: .hour, value: postIndex * 2, to: scheduledDate) ?? scheduledDate
+                    }
+                    
+                    let post = GeneratedPost(
+                        caption: caption,
+                        mediaItemId: mediaItem.id,
+                        scheduledDate: scheduledDate,
+                        status: .pending
+                    )
+                    
+                    posts.append(post)
+                    mediaIndex += 1
+                }
+            }
             
-            let post = GeneratedPost(
-                caption: caption,
-                mediaItemId: mediaItem.id,
-                scheduledDate: scheduledDate,
-                status: .pending
-            )
-            
-            posts.append(post)
+            // Move to next day
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+                break
+            }
+            currentDate = nextDate
         }
         
         return posts
@@ -70,41 +111,5 @@ class ContentGenerationService {
         return caption
     }
     
-    private func calculateScheduledDate(for index: Int, schedule: PostSchedule) -> Date {
-        let calendar = Calendar.current
-        let today = Date()
-        
-        let sortedDays = schedule.selectedDays.sorted { $0.rawValue < $1.rawValue }
-        guard !sortedDays.isEmpty else {
-            return calendar.date(byAdding: .day, value: index, to: today) ?? today
-        }
-        
-        let weekNumber = index / sortedDays.count
-        let dayIndex = index % sortedDays.count
-        let weekDay = sortedDays[dayIndex]
-        
-        // Calculate the date
-        let components = calendar.dateComponents([.year, .month, .day, .weekday], from: today)
-        let currentWeekday = components.weekday ?? 1
-        
-        var daysToAdd = (weekDay.rawValue - currentWeekday + 7) % 7
-        if daysToAdd == 0 && index > 0 {
-            daysToAdd = 7
-        }
-        daysToAdd += (weekNumber * 7)
-        
-        guard var scheduledDate = calendar.date(byAdding: .day, value: daysToAdd, to: today) else {
-            return today
-        }
-        
-        // Add time if specified
-        if let times = schedule.postTimes[weekDay], !times.isEmpty {
-            let time = times[0]
-            let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
-            scheduledDate = calendar.date(bySettingHour: timeComponents.hour ?? 9, minute: timeComponents.minute ?? 0, second: 0, of: scheduledDate) ?? scheduledDate
-        }
-        
-        return scheduledDate
-    }
 }
 
