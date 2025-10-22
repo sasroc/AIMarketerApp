@@ -35,8 +35,15 @@ struct CreateCampaignView: View {
                         // Navigation button
                         Button(action: nextStep) {
                             HStack {
-                                Text(campaignViewModel.currentStep == 3 ? "Generate Posts" : "Next")
-                                if campaignViewModel.currentStep < 3 {
+                                if campaignViewModel.currentStep == 3 && campaignViewModel.isGenerating {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                        .tint(.white)
+                                } else {
+                                    Text(campaignViewModel.currentStep == 3 ? "Generate Posts" : "Next")
+                                }
+                                
+                                if campaignViewModel.currentStep < 3 && !campaignViewModel.isGenerating {
                                     Image(systemName: "chevron.right")
                                 }
                             }
@@ -52,8 +59,8 @@ struct CreateCampaignView: View {
                             .foregroundColor(.white)
                             .cornerRadius(12)
                         }
-                        .disabled(!canProceed)
-                        .opacity(canProceed ? 1 : 0.5)
+                        .disabled(!canProceed || campaignViewModel.isGenerating)
+                        .opacity((canProceed && !campaignViewModel.isGenerating) ? 1 : 0.5)
                         .padding(.horizontal)
                         .padding(.bottom, 32)
                     }
@@ -126,11 +133,9 @@ struct CreateCampaignView: View {
     }
     
     private func generatePosts() {
+        showingGeneratedPosts = true
         Task {
             await campaignViewModel.generatePosts()
-            if !campaignViewModel.generatedPosts.isEmpty {
-                showingGeneratedPosts = true
-            }
         }
     }
     

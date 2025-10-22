@@ -3,10 +3,86 @@ import Foundation
 class ContentGenerationService {
     static let shared = ContentGenerationService()
     
+    private let supabaseService = SupabaseService.shared
+    
     private init() {}
     
-    // Mock content generation - replace with real OpenAI API calls via backend
+    // AI-powered content generation using Supabase Edge Functions
     func generatePosts(
+        mediaItems: [MediaItem],
+        marketingPlan: MarketingPlan,
+        schedule: PostSchedule
+    ) async throws -> [GeneratedPost] {
+        do {
+            // Use Supabase service to generate AI-powered captions
+            let posts = try await supabaseService.generateCaptions(
+                mediaItems: mediaItems,
+                marketingPlan: marketingPlan,
+                schedule: schedule
+            )
+            
+            // Apply custom scheduling times if specified
+            return applyCustomSchedulingTimes(posts: posts, schedule: schedule)
+            
+        } catch {
+            // Fallback to mock generation if AI service fails
+            print("AI generation failed, falling back to mock: \(error)")
+            return try await generateMockPosts(
+                mediaItems: mediaItems,
+                marketingPlan: marketingPlan,
+                schedule: schedule
+            )
+        }
+    }
+    
+    private func applyCustomSchedulingTimes(posts: [GeneratedPost], schedule: PostSchedule) -> [GeneratedPost] {
+        let calendar = Calendar.current
+        var updatedPosts: [GeneratedPost] = []
+        
+        for post in posts {
+            let weekdayComponent = calendar.component(.weekday, from: post.scheduledDate)
+            
+            if let weekDay = WeekDay.from(calendarWeekday: weekdayComponent),
+               let times = schedule.postTimes[weekDay], !times.isEmpty {
+                
+                // Find the appropriate time for this post
+                let dayStart = calendar.startOfDay(for: post.scheduledDate)
+                let postIndex = updatedPosts.filter { 
+                    calendar.isDate($0.scheduledDate, inSameDayAs: post.scheduledDate) 
+                }.count
+                
+                var scheduledDate = post.scheduledDate
+                if postIndex < times.count {
+                    let time = times[postIndex]
+                    let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+                    scheduledDate = calendar.date(bySettingHour: timeComponents.hour ?? 9, minute: timeComponents.minute ?? 0, second: 0, of: dayStart) ?? post.scheduledDate
+                } else {
+                    // Use last available time + offset
+                    let lastTime = times.last!
+                    let timeComponents = calendar.dateComponents([.hour, .minute], from: lastTime)
+                    scheduledDate = calendar.date(bySettingHour: timeComponents.hour ?? 9, minute: timeComponents.minute ?? 0, second: 0, of: dayStart) ?? post.scheduledDate
+                    scheduledDate = calendar.date(byAdding: .hour, value: (postIndex - times.count + 1) * 2, to: scheduledDate) ?? scheduledDate
+                }
+                
+                let updatedPost = GeneratedPost(
+                    id: post.id,
+                    caption: post.caption,
+                    mediaItemId: post.mediaItemId,
+                    scheduledDate: scheduledDate,
+                    status: post.status,
+                    createdAt: post.createdAt
+                )
+                updatedPosts.append(updatedPost)
+            } else {
+                updatedPosts.append(post)
+            }
+        }
+        
+        return updatedPosts
+    }
+    
+    // Fallback mock generation (keeping original logic as backup)
+    private func generateMockPosts(
         mediaItems: [MediaItem],
         marketingPlan: MarketingPlan,
         schedule: PostSchedule

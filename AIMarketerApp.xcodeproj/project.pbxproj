@@ -17,6 +17,8 @@
 		A0000008 /* GeneratedPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000008 /* GeneratedPost.swift */; };
 		A0000009 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000009 /* AuthenticationService.swift */; };
 		A000000A /* ContentGenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000A /* ContentGenerationService.swift */; };
+		A000000A1 /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000A1 /* SupabaseService.swift */; };
+		A000000A3 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = B000000A3 /* Config.plist */; };
 		A000000B /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000B /* AuthenticationViewModel.swift */; };
 		A000000C /* CampaignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000C /* CampaignViewModel.swift */; };
 		A000000D /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000D /* WelcomeView.swift */; };
@@ -34,6 +36,12 @@
 		A0000019 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000019 /* ProfileView.swift */; };
 		A000001A /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001A /* CustomTextField.swift */; };
 		A000001B /* PostPreviewCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001B /* PostPreviewCard.swift */; };
+		CE409FC42EA9341D006A2BF2 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC32EA9341D006A2BF2 /* Auth */; };
+		CE409FC62EA9341D006A2BF2 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC52EA9341D006A2BF2 /* Functions */; };
+		CE409FC82EA9341D006A2BF2 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC72EA9341D006A2BF2 /* PostgREST */; };
+		CE409FCA2EA9341D006A2BF2 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC92EA9341D006A2BF2 /* Realtime */; };
+		CE409FCC2EA9341D006A2BF2 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FCB2EA9341D006A2BF2 /* Storage */; };
+		CE409FCE2EA9341D006A2BF2 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FCD2EA9341D006A2BF2 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +55,8 @@
 		B0000008 /* GeneratedPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedPost.swift; sourceTree = "<group>"; };
 		B0000009 /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		B000000A /* ContentGenerationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGenerationService.swift; sourceTree = "<group>"; };
+		B000000A1 /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
+		B000000A3 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
 		B000000B /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 		B000000C /* CampaignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignViewModel.swift; sourceTree = "<group>"; };
 		B000000D /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -73,6 +83,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE409FC82EA9341D006A2BF2 /* PostgREST in Frameworks */,
+				CE409FC62EA9341D006A2BF2 /* Functions in Frameworks */,
+				CE409FCE2EA9341D006A2BF2 /* Supabase in Frameworks */,
+				CE409FC42EA9341D006A2BF2 /* Auth in Frameworks */,
+				CE409FCC2EA9341D006A2BF2 /* Storage in Frameworks */,
+				CE409FCA2EA9341D006A2BF2 /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +109,7 @@
 				B0000001 /* AIMarketerApp.swift */,
 				B000001C /* Info.plist */,
 				B0000003 /* Assets.xcassets */,
+				B000000A3 /* Config.plist */,
 				E0000004 /* Models */,
 				E0000005 /* Views */,
 				E0000006 /* ViewModels */,
@@ -150,6 +167,7 @@
 			children = (
 				B0000009 /* AuthenticationService.swift */,
 				B000000A /* ContentGenerationService.swift */,
+				B000000A1 /* SupabaseService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -254,6 +272,9 @@
 				Base,
 			);
 			mainGroup = E0000001;
+			packageReferences = (
+				CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			productRefGroup = E0000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -269,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A0000003 /* Assets.xcassets in Resources */,
+				A000000A3 /* Config.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +310,7 @@
 				A0000008 /* GeneratedPost.swift in Sources */,
 				A0000009 /* AuthenticationService.swift in Sources */,
 				A000000A /* ContentGenerationService.swift in Sources */,
+				A000000A1 /* SupabaseService.swift in Sources */,
 				A000000B /* AuthenticationViewModel.swift in Sources */,
 				A000000C /* CampaignViewModel.swift in Sources */,
 				A000000D /* WelcomeView.swift in Sources */,
@@ -516,6 +539,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CE409FC32EA9341D006A2BF2 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		CE409FC52EA9341D006A2BF2 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		CE409FC72EA9341D006A2BF2 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		CE409FC92EA9341D006A2BF2 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		CE409FCB2EA9341D006A2BF2 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		CE409FCD2EA9341D006A2BF2 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE409FC22EA9341D006A2BF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = G0000001 /* Project object */;
 }

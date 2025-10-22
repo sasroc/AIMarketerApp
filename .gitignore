@@ -10,30 +10,22 @@
 *.perspectivev3
 !default.perspectivev3
 xcuserdata/
-*.xccheckout
 *.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
+*.xccheckout
 *.xcscmblueprint
-*.xcscheme
 
-# CocoaPods
-Pods/
+# Sensitive Configuration Files
+Config.plist
 
-# Carthage
-Carthage/Build/
+# Supabase
+.supabase/
 
-# Swift Package Manager
-.build/
-.swiftpm/
+# Node modules (if any)
+node_modules/
 
-# Accio
-Dependencies/
+# Logs
+*.log
 
-# fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
+# Temporary files
+*.tmp
+*.temp
