@@ -25,11 +25,11 @@ struct MarketingPlanSection: View {
                 TextEditor(text: $campaignViewModel.marketingPlan.description)
                     .frame(height: 120)
                     .padding(8)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
                     )
                     .scrollContentBackground(.hidden)
             }
@@ -42,11 +42,11 @@ struct MarketingPlanSection: View {
                 
                 TextField("e.g., Young professionals aged 25-35", text: $campaignViewModel.marketingPlan.targetAudience)
                     .padding()
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
                     )
             }
             
@@ -79,11 +79,11 @@ struct MarketingPlanSection: View {
                 
                 TextField("Enter hashtags separated by commas", text: hashtagsBinding)
                     .padding()
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
                     )
             }
             
@@ -95,11 +95,11 @@ struct MarketingPlanSection: View {
                 
                 TextField("e.g., Visit our website", text: $campaignViewModel.marketingPlan.callToAction)
                     .padding()
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
                     )
             }
         }
@@ -131,7 +131,7 @@ struct ToneButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(isSelected ? Color.purple : Color.gray.opacity(0.1))
+            .background(isSelected ? Color.marketingPrimary : Color.marketingCardBackground)
             .foregroundColor(isSelected ? .white : .gray)
             .cornerRadius(12)
         }

@@ -16,7 +16,7 @@ struct ProfileView: View {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color.purple, Color.blue],
+                                        colors: [Color.marketingPrimary, Color.marketingSecondary],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -50,7 +50,7 @@ struct ProfileView: View {
                             Button(action: {}) {
                                 HStack {
                                     Image(systemName: "camera.fill")
-                                        .foregroundColor(.purple)
+                                        .foregroundColor(.marketingPrimary)
                                         .frame(width: 32)
                                     
                                     VStack(alignment: .leading, spacing: 4) {
@@ -69,7 +69,7 @@ struct ProfileView: View {
                                         .foregroundColor(.gray)
                                 }
                                 .padding()
-                                .background(Color.gray.opacity(0.1))
+                                .background(Color.marketingCardBackground)
                                 .cornerRadius(12)
                             }
                             .padding(.horizontal)
@@ -88,7 +88,7 @@ struct ProfileView: View {
                                 SettingsRow(icon: "questionmark.circle.fill", title: "Help & Support", action: {})
                                 SettingsRow(icon: "doc.text.fill", title: "Terms of Service", action: {})
                             }
-                            .background(Color.gray.opacity(0.1))
+                            .background(Color.marketingCardBackground)
                             .cornerRadius(12)
                             .padding(.horizontal)
                         }
@@ -97,10 +97,10 @@ struct ProfileView: View {
                         Button(action: { showingSignOutAlert = true }) {
                             Text("Sign Out")
                                 .font(.headline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.marketingError)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.red.opacity(0.1))
+                                .background(Color.marketingError.opacity(0.1))
                                 .cornerRadius(12)
                         }
                         .padding(.horizontal)
@@ -150,7 +150,7 @@ struct SettingsRow: View {
         Button(action: action) {
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(.purple)
+                    .foregroundColor(.marketingPrimary)
                     .frame(width: 32)
                 
                 Text(title)

@@ -9,7 +9,7 @@ struct CustomTextField: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundColor(.purple)
+                .foregroundColor(.marketingPrimary)
                 .frame(width: 24)
             
             if isSecure {
@@ -19,11 +19,11 @@ struct CustomTextField: View {
             }
         }
         .padding()
-        .background(Color.gray.opacity(0.1))
+        .background(Color.marketingCardBackground)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
         )
     }
 }

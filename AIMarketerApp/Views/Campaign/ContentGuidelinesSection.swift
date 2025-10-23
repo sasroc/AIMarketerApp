@@ -72,11 +72,11 @@ struct ContentGuidelinesSection: View {
                 TextEditor(text: $campaignViewModel.schedule.contentGuidelines)
                     .frame(height: 200)
                     .padding(8)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
                     )
                     .scrollContentBackground(.hidden)
                 
@@ -125,7 +125,7 @@ struct ContentGuidelinesSection: View {
                     )
                 }
                 .padding()
-                .background(Color.purple.opacity(0.1))
+                .background(Color.marketingPrimary.opacity(0.1))
                 .cornerRadius(12)
             }
         }
@@ -140,7 +140,7 @@ struct SummaryRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.purple)
+                .foregroundColor(.marketingPrimary)
                 .frame(width: 24)
             
             Text(label)

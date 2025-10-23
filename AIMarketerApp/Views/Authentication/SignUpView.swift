@@ -20,7 +20,7 @@ struct SignUpView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "person.badge.plus.fill")
                                 .font(.system(size: 70))
-                                .foregroundColor(.purple)
+                                .foregroundColor(.marketingPrimary)
                             
                             Text("Create Account")
                                 .font(.largeTitle)
@@ -94,7 +94,7 @@ struct SignUpView: View {
                         .padding()
                         .background(
                             LinearGradient(
-                                colors: [Color.purple, Color.blue],
+                                colors: [Color.marketingPrimary, Color.marketingSecondary],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -114,7 +114,7 @@ struct SignUpView: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .foregroundColor(.purple)
+                    .foregroundColor(.marketingPrimary)
                 }
             }
         }

@@ -32,8 +32,8 @@ struct MediaUploadSection: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.purple.opacity(0.2))
-                .foregroundColor(.purple)
+                .background(Color.marketingPrimary.opacity(0.2))
+                .foregroundColor(.marketingPrimary)
                 .cornerRadius(12)
             }
             .onChange(of: selectedItems) { newItems in

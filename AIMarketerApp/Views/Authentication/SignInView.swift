@@ -18,7 +18,7 @@ struct SignInView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 70))
-                                .foregroundColor(.purple)
+                                .foregroundColor(.marketingPrimary)
                             
                             Text("Welcome Back")
                                 .font(.largeTitle)
@@ -72,7 +72,7 @@ struct SignInView: View {
                         .padding()
                         .background(
                             LinearGradient(
-                                colors: [Color.purple, Color.blue],
+                                colors: [Color.marketingPrimary, Color.marketingSecondary],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -92,7 +92,7 @@ struct SignInView: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .foregroundColor(.purple)
+                    .foregroundColor(.marketingPrimary)
                 }
             }
         }

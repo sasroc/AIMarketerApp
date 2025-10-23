@@ -10,11 +10,6 @@ struct MainTabView: View {
                     Label("Home", systemImage: "house.fill")
                 }
             
-            CreateCampaignView()
-                .tabItem {
-                    Label("Create", systemImage: "plus.circle.fill")
-                }
-            
             ScheduleView()
                 .tabItem {
                     Label("Schedule", systemImage: "calendar")
@@ -26,7 +21,7 @@ struct MainTabView: View {
                 }
         }
         .environmentObject(campaignViewModel)
-        .tint(.purple)
+        .tint(.marketingPrimary)
     }
 }
 

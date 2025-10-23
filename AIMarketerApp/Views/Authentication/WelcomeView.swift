@@ -9,7 +9,7 @@ struct WelcomeView: View {
         ZStack {
             // Background gradient
             LinearGradient(
-                colors: [Color.purple.opacity(0.8), Color.blue.opacity(0.6)],
+                colors: [Color.marketingPrimary.opacity(0.8), Color.marketingSecondary.opacity(0.6)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -43,7 +43,7 @@ struct WelcomeView: View {
                     Button(action: { showingSignUp = true }) {
                         Text("Get Started")
                             .font(.headline)
-                            .foregroundColor(.purple)
+                            .foregroundColor(.marketingPrimary)
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.white)

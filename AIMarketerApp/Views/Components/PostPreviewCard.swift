@@ -32,7 +32,7 @@ struct PostPreviewCard: View {
                 // Delete button
                 Button(action: { showingDeleteConfirmation = true }) {
                     Image(systemName: "trash")
-                        .foregroundColor(.red.opacity(0.8))
+                        .foregroundColor(.marketingError.opacity(0.8))
                         .font(.system(size: 16))
                 }
                 .padding(.leading, 8)
@@ -57,7 +57,7 @@ struct PostPreviewCard: View {
             }
         }
         .padding()
-        .background(Color.gray.opacity(0.1))
+        .background(Color.marketingCardBackground)
         .cornerRadius(16)
         .alert("Delete Post", isPresented: $showingDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -73,10 +73,11 @@ struct PostPreviewCard: View {
     
     private var statusColor: Color {
         switch post.status {
-        case .pending: return .gray
-        case .scheduled: return .blue
-        case .posted: return .green
-        case .failed: return .red
+        case .draft: return .marketingWarning
+        case .pending: return .marketingWarning
+        case .scheduled: return .marketingInfo
+        case .posted: return .marketingSuccess
+        case .failed: return .marketingError
         }
     }
     

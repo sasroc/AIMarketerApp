@@ -8,6 +8,7 @@ class CampaignViewModel: ObservableObject {
     @Published var marketingPlan = MarketingPlan()
     @Published var schedule = PostSchedule()
     @Published var generatedPosts: [GeneratedPost] = []
+    @Published var draftCampaigns: [DraftCampaign] = []
     
     @Published var isGenerating = false
     @Published var errorMessage: String?
@@ -93,6 +94,46 @@ class CampaignViewModel: ObservableObject {
         generatedPosts = []
         currentStep = 0
         errorMessage = nil
+    }
+    
+    // MARK: - Draft Management
+    
+    func saveDraft() {
+        let draft = DraftCampaign(
+            mediaItems: mediaItems,
+            marketingPlan: marketingPlan,
+            schedule: schedule,
+            currentStep: currentStep,
+            updatedAt: Date()
+        )
+        
+        if let existingIndex = draftCampaigns.firstIndex(where: { $0.id == draft.id }) {
+            draftCampaigns[existingIndex] = draft
+        } else {
+            draftCampaigns.append(draft)
+        }
+        
+        // Reset current campaign
+        resetCampaign()
+    }
+    
+    func loadDraft(_ draft: DraftCampaign) {
+        mediaItems = draft.mediaItems
+        marketingPlan = draft.marketingPlan
+        schedule = draft.schedule
+        currentStep = draft.currentStep
+        errorMessage = nil
+    }
+    
+    func deleteDraft(_ draft: DraftCampaign) {
+        draftCampaigns.removeAll { $0.id == draft.id }
+    }
+    
+    func hasUnsavedChanges() -> Bool {
+        return !mediaItems.isEmpty || 
+               !marketingPlan.description.isEmpty || 
+               !schedule.selectedDays.isEmpty ||
+               currentStep > 0
     }
 }
 

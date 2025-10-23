@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CreateCampaignView: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var showingGeneratedPosts = false
     
     var body: some View {
@@ -51,7 +52,7 @@ struct CreateCampaignView: View {
                             .padding()
                             .background(
                                 LinearGradient(
-                                    colors: [Color.purple, Color.blue],
+                                    colors: [Color.marketingPrimary, Color.marketingSecondary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -62,7 +63,29 @@ struct CreateCampaignView: View {
                         .disabled(!canProceed || campaignViewModel.isGenerating)
                         .opacity((canProceed && !campaignViewModel.isGenerating) ? 1 : 0.5)
                         .padding(.horizontal)
-                        .padding(.bottom, 32)
+                        
+                        // Save Draft button
+                        if campaignViewModel.hasUnsavedChanges() {
+                            Button(action: saveDraft) {
+                                HStack {
+                                    Image(systemName: "doc.text")
+                                    Text("Save Draft")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.marketingCardBackground)
+                                .foregroundColor(.marketingPrimary)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
+                                )
+                                .cornerRadius(12)
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        Spacer()
+                            .frame(height: 32)
                     }
                     .simultaneousGesture(
                         TapGesture().onEnded { _ in
@@ -81,7 +104,7 @@ struct CreateCampaignView: View {
                                 Image(systemName: "chevron.left")
                                 Text("Back")
                             }
-                            .foregroundColor(.purple)
+                            .foregroundColor(.marketingPrimary)
                         }
                     }
                 }
@@ -89,7 +112,7 @@ struct CreateCampaignView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { campaignViewModel.resetCampaign() }) {
                         Image(systemName: "arrow.clockwise")
-                            .foregroundColor(.purple)
+                            .foregroundColor(.marketingPrimary)
                     }
                 }
             }
@@ -139,6 +162,11 @@ struct CreateCampaignView: View {
         }
     }
     
+    private func saveDraft() {
+        campaignViewModel.saveDraft()
+        dismiss() // Navigate back to home tab
+    }
+    
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
@@ -153,7 +181,7 @@ struct ProgressSteps: View {
             ForEach(0..<steps.count, id: \.self) { index in
                 VStack(spacing: 8) {
                     Circle()
-                        .fill(index <= currentStep ? Color.purple : Color.gray.opacity(0.3))
+                        .fill(index <= currentStep ? Color.marketingPrimary : Color.gray.opacity(0.3))
                         .frame(width: 32, height: 32)
                         .overlay(
                             Text("\(index + 1)")
@@ -169,7 +197,7 @@ struct ProgressSteps: View {
                 
                 if index < steps.count - 1 {
                     Rectangle()
-                        .fill(index < currentStep ? Color.purple : Color.gray.opacity(0.3))
+                        .fill(index < currentStep ? Color.marketingPrimary : Color.gray.opacity(0.3))
                         .frame(height: 2)
                         .frame(maxWidth: .infinity)
                 }

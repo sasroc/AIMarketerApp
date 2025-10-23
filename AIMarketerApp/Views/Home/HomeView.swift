@@ -42,6 +42,32 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
                         
+                        // Drafts section
+                        if !campaignViewModel.draftCampaigns.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text("Drafts")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    
+                                    Spacer()
+                                    
+                                    NavigationLink(destination: ScheduleView()) {
+                                        Text("View All")
+                                            .font(.subheadline)
+                                            .foregroundColor(.marketingPrimary)
+                                    }
+                                }
+                                .padding(.horizontal)
+                                
+                                ForEach(campaignViewModel.draftCampaigns.prefix(3)) { draft in
+                                    DraftPreviewCard(draft: draft)
+                                        .padding(.horizontal)
+                                }
+                            }
+                            .padding(.top, 8)
+                        }
+                        
                         // Recent posts section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
@@ -55,7 +81,7 @@ struct HomeView: View {
                                     NavigationLink(destination: ScheduleView()) {
                                         Text("View All")
                                             .font(.subheadline)
-                                            .foregroundColor(.purple)
+                                            .foregroundColor(.marketingPrimary)
                                     }
                                 }
                             }
@@ -91,6 +117,20 @@ struct HomeView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: CreateCampaignView()) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title3)
+                            Text("New Post")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.marketingPrimary)
+                    }
+                }
+            }
         }
     }
     
@@ -135,7 +175,7 @@ struct StatCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color.gray.opacity(0.1))
+        .background(Color.marketingCardBackground)
         .cornerRadius(16)
     }
 }
@@ -163,6 +203,56 @@ struct EmptyStateView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
+    }
+}
+
+struct DraftPreviewCard: View {
+    let draft: DraftCampaign
+    @EnvironmentObject var campaignViewModel: CampaignViewModel
+    
+    var body: some View {
+        NavigationLink(destination: CreateCampaignView()) {
+            HStack(spacing: 12) {
+                // Draft icon
+                Image(systemName: "doc.text")
+                    .font(.title2)
+                    .foregroundColor(.marketingPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Color.marketingPrimary.opacity(0.1))
+                    .cornerRadius(8)
+                
+                // Draft info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Draft Campaign")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("Step \(draft.currentStep + 1) of 4")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    if !draft.marketingPlan.description.isEmpty {
+                        Text(draft.marketingPlan.description)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .lineLimit(1)
+                    }
+                }
+                
+                Spacer()
+                
+                // Navigation arrow
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            .padding()
+            .background(Color.marketingCardBackground)
+            .cornerRadius(12)
+        }
+        .simultaneousGesture(TapGesture().onEnded {
+            campaignViewModel.loadDraft(draft)
+        })
     }
 }
 

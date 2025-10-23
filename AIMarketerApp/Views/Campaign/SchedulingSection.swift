@@ -40,7 +40,7 @@ struct SchedulingSection: View {
                         .labelsHidden()
                     }
                     .padding()
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                     
                     HStack {
@@ -60,7 +60,7 @@ struct SchedulingSection: View {
                         .labelsHidden()
                     }
                     .padding()
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.marketingCardBackground)
                     .cornerRadius(12)
                 }
             }
@@ -139,7 +139,7 @@ struct SchedulingSection: View {
                             }
                         }
                         .padding()
-                        .background(Color.gray.opacity(0.1))
+                        .background(Color.marketingCardBackground)
                         .cornerRadius(12)
                     }
                 }
@@ -234,7 +234,7 @@ struct DayButton: View {
                 .fontWeight(.medium)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(isSelected ? Color.purple : Color.gray.opacity(0.1))
+                .background(isSelected ? Color.marketingPrimary : Color.marketingCardBackground)
                 .foregroundColor(isSelected ? .white : .gray)
                 .cornerRadius(12)
         }

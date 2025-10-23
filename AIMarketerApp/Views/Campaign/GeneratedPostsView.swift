@@ -70,7 +70,7 @@ struct GeneratedPostsView: View {
                                 .padding()
                                 .background(
                                     LinearGradient(
-                                        colors: [Color.purple, Color.blue],
+                                        colors: [Color.marketingPrimary, Color.marketingSecondary],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -89,7 +89,7 @@ struct GeneratedPostsView: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .foregroundColor(.purple)
+                    .foregroundColor(.marketingPrimary)
                 }
             }
             .alert("Schedule Posts", isPresented: $showingScheduleConfirmation) {
@@ -127,7 +127,7 @@ struct EditablePostCard: View {
             // Date and buttons
             HStack(spacing: 8) {
                 Image(systemName: "calendar")
-                    .foregroundColor(.purple)
+                    .foregroundColor(.marketingPrimary)
                 Text(formattedDate)
                     .font(.subheadline)
                     .foregroundColor(.gray)
@@ -142,14 +142,14 @@ struct EditablePostCard: View {
                         Text(isEditing ? "Done" : "Edit")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.purple)
+                            .foregroundColor(.marketingPrimary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(Color.purple.opacity(0.15))
+                            .background(Color.marketingPrimary.opacity(0.15))
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                                    .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
                             )
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -159,10 +159,10 @@ struct EditablePostCard: View {
                         showingDeleteConfirmation = true
                     }) {
                         Image(systemName: "trash")
-                            .foregroundColor(.red)
+                            .foregroundColor(.marketingError)
                             .font(.system(size: 16, weight: .medium))
                             .padding(8)
-                            .background(Color.red.opacity(0.1))
+                            .background(Color.marketingError.opacity(0.1))
                             .cornerRadius(6)
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -198,7 +198,7 @@ struct EditablePostCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color.gray.opacity(0.1))
+        .background(Color.marketingCardBackground)
         .cornerRadius(16)
         .alert("Delete Post", isPresented: $showingDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
