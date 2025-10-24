@@ -4,108 +4,75 @@ struct SignUpView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     
-    @State private var name = ""
-    @State private var email = ""
-    @State private var password = ""
-    @State private var confirmPassword = ""
-    
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.black.ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Header
-                        VStack(spacing: 12) {
-                            Image(systemName: "person.badge.plus.fill")
-                                .font(.system(size: 70))
-                                .foregroundColor(.marketingPrimary)
-                            
-                            Text("Create Account")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                            
-                            Text("Join AI Marketer today")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.top, 40)
+                VStack(spacing: 40) {
+                    Spacer()
+                    
+                    // Header
+                    VStack(spacing: 16) {
+                        Image(systemName: "sparkles.rectangle.stack.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(.marketingPrimary)
                         
-                        // Form
-                        VStack(spacing: 16) {
-                            CustomTextField(
-                                icon: "person.fill",
-                                placeholder: "Full Name",
-                                text: $name
-                            )
-                            
-                            CustomTextField(
-                                icon: "envelope.fill",
-                                placeholder: "Email",
-                                text: $email
-                            )
-                            .textInputAutocapitalization(.never)
-                            .keyboardType(.emailAddress)
-                            
-                            CustomTextField(
-                                icon: "lock.fill",
-                                placeholder: "Password",
-                                text: $password,
-                                isSecure: true
-                            )
-                            
-                            CustomTextField(
-                                icon: "lock.fill",
-                                placeholder: "Confirm Password",
-                                text: $confirmPassword,
-                                isSecure: true
-                            )
-                        }
-                        .padding(.top, 20)
+                        Text("Get Started")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(.white)
                         
-                        // Error message
-                        if let errorMessage = authViewModel.errorMessage {
-                            Text(errorMessage)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.horizontal)
-                        }
-                        
-                        // Validation message
-                        if !password.isEmpty && !confirmPassword.isEmpty && password != confirmPassword {
-                            Text("Passwords do not match")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                        }
-                        
-                        // Sign up button
-                        Button(action: signUp) {
-                            if authViewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            } else {
-                                Text("Create Account")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                            }
+                        Text("Sign in with your Google account to continue")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
+                    
+                    // Error message
+                    if let errorMessage = authViewModel.errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .padding(.horizontal)
+                    }
+                    
+                    // Google Sign In Button
+                    Button(action: signInWithGoogle) {
+                        HStack(spacing: 12) {
+                            // Official Google logo
+                            Image("GoogleLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                            
+                            Text("Continue with Google")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
                         }
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 14)
                         .background(
-                            LinearGradient(
-                                colors: [Color.marketingPrimary, Color.marketingSecondary],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
                         )
-                        .cornerRadius(16)
-                        .disabled(!isFormValid || authViewModel.isLoading)
-                        .opacity((!isFormValid || authViewModel.isLoading) ? 0.6 : 1)
-                        
-                        Spacer()
                     }
+                    .disabled(authViewModel.isLoading)
+                    .opacity(authViewModel.isLoading ? 0.6 : 1)
                     .padding(.horizontal, 32)
+                    
+                    if authViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .marketingPrimary))
+                    }
+                    
+                    Spacer()
+                    Spacer()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -120,13 +87,9 @@ struct SignUpView: View {
         }
     }
     
-    private var isFormValid: Bool {
-        !name.isEmpty && !email.isEmpty && !password.isEmpty && password == confirmPassword && password.count >= 6
-    }
-    
-    private func signUp() {
+    private func signInWithGoogle() {
         Task {
-            await authViewModel.signUp(email: email, password: password, name: name)
+            await authViewModel.signInWithGoogle()
             if authViewModel.isAuthenticated {
                 dismiss()
             }

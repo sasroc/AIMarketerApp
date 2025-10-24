@@ -63,18 +63,6 @@ struct WelcomeView: View {
                                     .stroke(Color.white, lineWidth: 2)
                             )
                     }
-                    
-                    // Demo button
-                    Button(action: enterDemoMode) {
-                        HStack {
-                            Image(systemName: "bolt.fill")
-                            Text("Try Demo")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                    }
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 50)
@@ -85,12 +73,6 @@ struct WelcomeView: View {
         }
         .sheet(isPresented: $showingSignUp) {
             SignUpView()
-        }
-    }
-    
-    private func enterDemoMode() {
-        Task {
-            await authViewModel.demoLogin()
         }
     }
 }

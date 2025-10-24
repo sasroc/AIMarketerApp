@@ -121,7 +121,9 @@ struct ProfileView: View {
             .alert("Sign Out", isPresented: $showingSignOutAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Sign Out", role: .destructive) {
-                    authViewModel.signOut()
+                    Task {
+                        await authViewModel.signOut()
+                    }
                 }
             } message: {
                 Text("Are you sure you want to sign out?")

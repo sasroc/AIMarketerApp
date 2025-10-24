@@ -11,12 +11,11 @@ class AuthenticationViewModel: ObservableObject {
     private let authService = AuthenticationService.shared
     
     init() {
-        checkAuthStatus()
-    }
-    
-    func checkAuthStatus() {
-        currentUser = authService.getCurrentUser()
-        isAuthenticated = currentUser != nil
+        // Listen to auth service changes
+        authService.$currentUser
+            .assign(to: &$currentUser)
+        authService.$isAuthenticated
+            .assign(to: &$isAuthenticated)
     }
     
     func signUp(email: String, password: String, name: String) async {
@@ -49,26 +48,29 @@ class AuthenticationViewModel: ObservableObject {
         isLoading = false
     }
     
-    func signOut() {
-        authService.signOut()
-        currentUser = nil
-        isAuthenticated = false
-    }
-    
-    func demoLogin() async {
+    func signInWithGoogle() async {
         isLoading = true
         errorMessage = nil
         
-        // Create a demo user instantly (no network delay for testing)
-        let demoUser = User(
-            email: "demo@aimarketer.app",
-            name: "Demo User",
-            instagramConnected: false
-        )
+        do {
+            let user = try await authService.signInWithGoogle()
+            currentUser = user
+            isAuthenticated = true
+        } catch {
+            errorMessage = error.localizedDescription
+        }
         
-        currentUser = demoUser
-        isAuthenticated = true
         isLoading = false
+    }
+    
+    func signOut() async {
+        do {
+            try await authService.signOut()
+            currentUser = nil
+            isAuthenticated = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

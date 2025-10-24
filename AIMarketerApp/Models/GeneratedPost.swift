@@ -20,6 +20,7 @@ struct GeneratedPost: Identifiable, Codable {
 
 enum PostStatus: String, Codable {
     case pending = "Pending"
+    case draft = "Draft"
     case scheduled = "Scheduled"
     case posted = "Posted"
     case failed = "Failed"
@@ -27,6 +28,7 @@ enum PostStatus: String, Codable {
     var color: String {
         switch self {
         case .pending: return "gray"
+        case .draft: return "orange"
         case .scheduled: return "blue"
         case .posted: return "green"
         case .failed: return "red"
@@ -36,6 +38,7 @@ enum PostStatus: String, Codable {
     var icon: String {
         switch self {
         case .pending: return "clock"
+        case .draft: return "doc.text"
         case .scheduled: return "calendar"
         case .posted: return "checkmark.circle.fill"
         case .failed: return "exclamationmark.triangle.fill"

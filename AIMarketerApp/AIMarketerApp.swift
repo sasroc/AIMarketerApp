@@ -26,6 +26,25 @@ struct AIMarketerApp: App {
             RootView()
                 .environmentObject(authViewModel)
                 .preferredColorScheme(.dark)
+                .onOpenURL { url in
+                    print("🔗 App received URL: \(url)")
+                    handleOAuthCallback(url: url)
+                }
+        }
+    }
+    
+    private func handleOAuthCallback(url: URL) {
+        print("🔗 Handling OAuth callback: \(url)")
+        print("🔗 URL scheme: \(url.scheme ?? "nil")")
+        print("🔗 URL host: \(url.host ?? "nil")")
+        print("🔗 URL path: \(url.path)")
+        print("🔗 URL query: \(url.query ?? "nil")")
+        
+        // Check if this is our OAuth callback
+        if url.scheme == "ai-marketer" && url.host == "auth" && url.path == "/callback" {
+            print("✅ OAuth callback detected!")
+            // The ASWebAuthenticationSession should handle this automatically
+            // but we can add additional processing here if needed
         }
     }
 }

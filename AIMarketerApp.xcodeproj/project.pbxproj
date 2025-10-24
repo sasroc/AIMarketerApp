@@ -36,6 +36,7 @@
 		A0000019 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000019 /* ProfileView.swift */; };
 		A000001A /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001A /* CustomTextField.swift */; };
 		A000001B /* PostPreviewCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001B /* PostPreviewCard.swift */; };
+		A000001C /* DraftCampaign.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001D /* DraftCampaign.swift */; };
 		CE409FC42EA9341D006A2BF2 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC32EA9341D006A2BF2 /* Auth */; };
 		CE409FC62EA9341D006A2BF2 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC52EA9341D006A2BF2 /* Functions */; };
 		CE409FC82EA9341D006A2BF2 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC72EA9341D006A2BF2 /* PostgREST */; };
@@ -74,6 +75,7 @@
 		B0000019 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		B000001A /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		B000001B /* PostPreviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPreviewCard.swift; sourceTree = "<group>"; };
+		B000001D /* DraftCampaign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCampaign.swift; sourceTree = "<group>"; };
 		B000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0000001 /* AIMarketerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIMarketerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -134,6 +136,7 @@
 				B0000006 /* MarketingPlan.swift */,
 				B0000007 /* PostSchedule.swift */,
 				B0000008 /* GeneratedPost.swift */,
+				B000001D /* DraftCampaign.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -308,6 +311,7 @@
 				A0000006 /* MarketingPlan.swift in Sources */,
 				A0000007 /* PostSchedule.swift in Sources */,
 				A0000008 /* GeneratedPost.swift in Sources */,
+				A000001C /* DraftCampaign.swift in Sources */,
 				A0000009 /* AuthenticationService.swift in Sources */,
 				A000000A /* ContentGenerationService.swift in Sources */,
 				A000000A1 /* SupabaseService.swift in Sources */,

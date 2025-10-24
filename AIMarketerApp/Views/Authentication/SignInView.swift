@@ -4,86 +4,75 @@ struct SignInView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     
-    @State private var email = ""
-    @State private var password = ""
-    
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.black.ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Header
-                        VStack(spacing: 12) {
-                            Image(systemName: "person.circle.fill")
-                                .font(.system(size: 70))
-                                .foregroundColor(.marketingPrimary)
-                            
-                            Text("Welcome Back")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                            
-                            Text("Sign in to continue")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.top, 40)
+                VStack(spacing: 40) {
+                    Spacer()
+                    
+                    // Header
+                    VStack(spacing: 16) {
+                        Image(systemName: "sparkles.rectangle.stack.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(.marketingPrimary)
                         
-                        // Form
-                        VStack(spacing: 16) {
-                            CustomTextField(
-                                icon: "envelope.fill",
-                                placeholder: "Email",
-                                text: $email
-                            )
-                            .textInputAutocapitalization(.never)
-                            .keyboardType(.emailAddress)
+                        Text("Welcome Back")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(.white)
+                        
+                        Text("Sign in with your Google account to continue")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
+                    
+                    // Error message
+                    if let errorMessage = authViewModel.errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .padding(.horizontal)
+                    }
+                    
+                    // Google Sign In Button
+                    Button(action: signInWithGoogle) {
+                        HStack(spacing: 12) {
+                            // Official Google logo
+                            Image("GoogleLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
                             
-                            CustomTextField(
-                                icon: "lock.fill",
-                                placeholder: "Password",
-                                text: $password,
-                                isSecure: true
-                            )
-                        }
-                        .padding(.top, 20)
-                        
-                        // Error message
-                        if let errorMessage = authViewModel.errorMessage {
-                            Text(errorMessage)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.horizontal)
-                        }
-                        
-                        // Sign in button
-                        Button(action: signIn) {
-                            if authViewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            } else {
-                                Text("Sign In")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                            }
+                            Text("Continue with Google")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
                         }
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 14)
                         .background(
-                            LinearGradient(
-                                colors: [Color.marketingPrimary, Color.marketingSecondary],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
                         )
-                        .cornerRadius(16)
-                        .disabled(authViewModel.isLoading || email.isEmpty || password.isEmpty)
-                        .opacity((authViewModel.isLoading || email.isEmpty || password.isEmpty) ? 0.6 : 1)
-                        
-                        Spacer()
                     }
+                    .disabled(authViewModel.isLoading)
+                    .opacity(authViewModel.isLoading ? 0.6 : 1)
                     .padding(.horizontal, 32)
+                    
+                    if authViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .marketingPrimary))
+                    }
+                    
+                    Spacer()
+                    Spacer()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -98,9 +87,9 @@ struct SignInView: View {
         }
     }
     
-    private func signIn() {
+    private func signInWithGoogle() {
         Task {
-            await authViewModel.signIn(email: email, password: password)
+            await authViewModel.signInWithGoogle()
             if authViewModel.isAuthenticated {
                 dismiss()
             }
