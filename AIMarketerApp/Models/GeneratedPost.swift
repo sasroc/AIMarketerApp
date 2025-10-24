@@ -19,11 +19,21 @@ struct GeneratedPost: Identifiable, Codable {
 }
 
 enum PostStatus: String, Codable {
-    case pending = "Pending"
-    case draft = "Draft"
-    case scheduled = "Scheduled"
-    case posted = "Posted"
-    case failed = "Failed"
+    case pending = "pending"
+    case draft = "draft"
+    case scheduled = "scheduled"
+    case posted = "posted"
+    case failed = "failed"
+    
+    var displayName: String {
+        switch self {
+        case .pending: return "Pending"
+        case .draft: return "Draft"
+        case .scheduled: return "Scheduled"
+        case .posted: return "Posted"
+        case .failed: return "Failed"
+        }
+    }
     
     var color: String {
         switch self {

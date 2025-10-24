@@ -184,16 +184,112 @@ struct EditablePostCard: View {
             }
             
             // Media preview
-            if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }),
-               let thumbnail = mediaItem.thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 200)
-                    .clipped()
-                    .cornerRadius(12)
-                    .allowsHitTesting(false)
+            if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
+                Group {
+                    if let thumbnail = mediaItem.thumbnail {
+                        // Display local thumbnail if available
+                        Image(uiImage: thumbnail)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 200)
+                            .clipped()
+                            .cornerRadius(12)
+                            .allowsHitTesting(false)
+                            .onAppear {
+                                print("🖼️ Displaying local thumbnail for post: \(post.id)")
+                            }
+                    } else if let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
+                        // Display from cloud URL
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 200)
+                                    .background(Color.gray.opacity(0.3))
+                                    .cornerRadius(12)
+                                    .onAppear {
+                                        print("⏳ Loading image from cloud: \(cloudURL)")
+                                    }
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 200)
+                                    .clipped()
+                                    .cornerRadius(12)
+                                    .allowsHitTesting(false)
+                                    .onAppear {
+                                        print("✅ Successfully loaded image from cloud for post: \(post.id)")
+                                    }
+                            case .failure(let error):
+                                VStack {
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.gray)
+                                    Text("Failed to load")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                                .background(Color.gray.opacity(0.3))
+                                .cornerRadius(12)
+                                .onAppear {
+                                    print("❌ Failed to load image from cloud: \(cloudURL)")
+                                    print("   Error: \(error)")
+                                }
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    } else {
+                        // Fallback placeholder
+                        VStack {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                            Text("No image")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 200)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(12)
+                        .onAppear {
+                            print("⚠️ No image source for post: \(post.id)")
+                            print("   Media item has no thumbnail or cloud URL")
+                        }
+                    }
+                }
+            } else {
+                // No media item found
+                VStack {
+                    Image(systemName: "photo.slash")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(.red)
+                    Text("Media not found")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+                .background(Color.gray.opacity(0.3))
+                .cornerRadius(12)
+                .onAppear {
+                    print("❌ No media item found for post: \(post.id)")
+                    print("   Post media_item_id: \(post.mediaItemId)")
+                    print("   Available media items: \(campaignViewModel.mediaItems.map { $0.id })")
+                }
             }
         }
         .frame(maxWidth: .infinity)

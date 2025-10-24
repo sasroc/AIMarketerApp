@@ -12,7 +12,7 @@ struct MediaItem: Identifiable, Equatable, Codable {
     var thumbnailData: Data?
     var localURL: URL?
     var cloudURL: String?
-    let createdAt: Date
+    var createdAt: Date
     
     init(id: String = UUID().uuidString, type: MediaType, thumbnail: UIImage? = nil, localURL: URL? = nil, cloudURL: String? = nil, createdAt: Date = Date()) {
         self.id = id

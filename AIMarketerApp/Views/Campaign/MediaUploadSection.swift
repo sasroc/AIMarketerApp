@@ -71,13 +71,27 @@ struct MediaUploadSection: View {
             for item in items {
                 if let data = try? await item.loadTransferable(type: Data.self),
                    let image = UIImage(data: data) {
-                    let mediaItem = MediaItem(
-                        type: .image,
-                        thumbnail: image,
-                        localURL: nil
-                    )
-                    await MainActor.run {
-                        campaignViewModel.addMediaItem(mediaItem)
+                    
+                    // Save to temporary file
+                    let tempDir = FileManager.default.temporaryDirectory
+                    let fileName = UUID().uuidString + ".jpg"
+                    let fileURL = tempDir.appendingPathComponent(fileName)
+                    
+                    do {
+                        try data.write(to: fileURL)
+                        print("📁 Saved image to temp file: \(fileURL.path)")
+                        
+                        let mediaItem = MediaItem(
+                            type: .image,
+                            thumbnail: image,
+                            localURL: fileURL
+                        )
+                        
+                        await MainActor.run {
+                            campaignViewModel.addMediaItem(mediaItem)
+                        }
+                    } catch {
+                        print("❌ Failed to save image to temp file: \(error)")
                     }
                 }
             }

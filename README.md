@@ -12,7 +12,8 @@ An AI-powered marketing app that helps you create and schedule social media cont
 - ✏️ **Advanced Post Editing** - Edit post captions with cursor positioning and keyboard support
 - 🗑️ **Post Management** - Delete posts with confirmation dialogs
 - 📊 **Dashboard** - Track upcoming and posted content
-- 👤 **User Authentication** - Secure login and account management
+- 👤 **User Authentication** - Secure login and account management with Supabase
+- 💾 **Data Persistence** - All campaigns, posts, and media automatically saved and synced across devices
 
 ## Getting Started
 
@@ -25,9 +26,14 @@ An AI-powered marketing app that helps you create and schedule social media cont
 ### Installation
 
 1. Clone the repository
-2. Open `AIMarketerApp.xcodeproj` in Xcode
-3. Select your target device or simulator
-4. Press `Cmd + R` to build and run
+2. Set up Supabase (see [SUPABASE_SETUP.md](SUPABASE_SETUP.md))
+3. Configure your API keys in `Config.plist` (copy from `Config.template.plist`)
+4. Apply database migrations: `./apply-migrations.sh`
+5. Open `AIMarketerApp.xcodeproj` in Xcode
+6. Select your target device or simulator
+7. Press `Cmd + R` to build and run
+
+For detailed setup instructions, see [QUICKSTART.md](QUICKSTART.md).
 
 ### Project Structure
 
@@ -68,25 +74,44 @@ AIMarketerApp/
 7. **Review & Edit** - Edit any captions before scheduling
 8. **Schedule** - Confirm and schedule all posts
 
-### Mock Services
+### Data Persistence
 
-Currently, the app uses mock services for:
-- User authentication (stored locally)
-- Content generation (placeholder captions)
+All user data is automatically saved to Supabase:
 
-To integrate with a real backend:
-1. Update `AuthenticationService.swift` to call your authentication API
-2. Update `ContentGenerationService.swift` to call your AI backend (OpenAI API)
-3. Add Instagram API integration for posting
+- **Media Files** - Uploaded to Supabase Storage with secure access
+- **Draft Campaigns** - Marketing plans, schedules, and content guidelines
+- **Generated Posts** - AI-generated captions, scheduled dates, and post status
+- **Cross-Device Sync** - Access your data from any device
+
+Data is automatically:
+- Loaded when you sign in
+- Saved as you create and edit content
+- Protected with Row Level Security (RLS)
+
+For more details, see [DATA_PERSISTENCE.md](DATA_PERSISTENCE.md).
+
+### Services Integration
+
+The app integrates with:
+- **Supabase** - Authentication, database, and file storage
+- **AI Content Generation** - Custom edge function for generating captions (see `supabase/functions/generate-captions`)
+
+To customize or extend:
+1. Update `SupabaseService.swift` for database operations
+2. Modify `supabase/functions/generate-captions/index.ts` for AI generation logic
+3. Add Instagram API integration for posting (future enhancement)
 
 ## Next Steps
 
-- [ ] Integrate with backend API
-- [ ] Connect to OpenAI for real content generation
-- [ ] Implement Instagram Graph API integration
+- [x] Integrate with Supabase backend
+- [x] Implement data persistence and sync
+- [x] Connect AI for content generation
+- [ ] Implement Instagram Graph API integration for automatic posting
 - [ ] Add push notifications for post status updates
-- [ ] Implement analytics and insights
-- [ ] Add support for more social media platforms
+- [ ] Implement analytics and insights dashboard
+- [ ] Add support for more social media platforms (Facebook, Twitter, LinkedIn)
+- [ ] Offline mode with local caching
+- [ ] Advanced scheduling with time zone support
 
 ## Design Highlights
 

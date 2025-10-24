@@ -12,7 +12,7 @@ struct PostPreviewCard: View {
                 HStack(spacing: 6) {
                     Image(systemName: post.status.icon)
                         .font(.caption)
-                    Text(post.status.rawValue)
+                    Text(post.status.displayName)
                         .font(.caption)
                         .fontWeight(.medium)
                 }
@@ -45,15 +45,58 @@ struct PostPreviewCard: View {
                 .lineLimit(3)
             
             // Media preview
-            if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }),
-               let thumbnail = mediaItem.thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-                    .cornerRadius(12)
+            if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
+                Group {
+                    if let thumbnail = mediaItem.thumbnail {
+                        // Display local thumbnail if available
+                        Image(uiImage: thumbnail)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                            .clipped()
+                            .cornerRadius(12)
+                    } else if let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
+                        // Display from cloud URL
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity)
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity)
+                                    .clipped()
+                                    .cornerRadius(12)
+                            case .failure:
+                                VStack {
+                                    Image(systemName: "photo")
+                                    Text("Failed to load")
+                                }
+                                .frame(height: 200)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(12)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    } else {
+                        // Fallback placeholder
+                        VStack {
+                            Image(systemName: "photo")
+                            Text("No image")
+                        }
+                        .frame(height: 200)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(12)
+                    }
+                }
             }
         }
         .padding()
