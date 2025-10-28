@@ -65,8 +65,16 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>ai-marketer</string>
+				<string>aimarketer</string>
 			</array>
 		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+		<string>fbauth2</string>
+		<string>instagram</string>
 	</array>
 </dict>
 </plist>

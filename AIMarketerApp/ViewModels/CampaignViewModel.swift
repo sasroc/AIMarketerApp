@@ -15,9 +15,11 @@ class CampaignViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var currentStep = 0
     @Published var currentCampaignId: String?
+    @Published var lastRefreshTime: Date?
     
     private let contentService = ContentGenerationService.shared
     private let supabaseService = SupabaseService.shared
+    private var refreshTimer: Timer?
     
     let maxMediaItems = 10
     
@@ -50,8 +52,9 @@ class CampaignViewModel: ObservableObject {
             print("✅ Loaded \(allMedia.count) media items from database")
             
             // Store media items that are referenced by posts
-            let mediaItemIds = Set(generatedPosts.map { $0.mediaItemId })
-            mediaItems = allMedia.filter { mediaItemIds.contains($0.id) }
+            // Use case-insensitive comparison for UUID matching
+            let mediaItemIds = Set(generatedPosts.map { $0.mediaItemId.lowercased() })
+            mediaItems = allMedia.filter { mediaItemIds.contains($0.id.lowercased()) }
             print("✅ Loaded \(mediaItems.count) media items for current posts")
         } catch {
             print("❌ Failed to load data: \(error.localizedDescription)")
@@ -59,6 +62,72 @@ class CampaignViewModel: ObservableObject {
         }
         
         isLoading = false
+    }
+    
+    /// Refresh only the post statuses (lightweight refresh)
+    func refreshPostStatuses() async {
+        do {
+            let updatedPosts = try await supabaseService.fetchGeneratedPosts()
+            
+            // Update only posts that have changed status
+            var hasChanges = false
+            for updatedPost in updatedPosts {
+                // Compare UUIDs case-insensitively to avoid duplicates
+                if let index = generatedPosts.firstIndex(where: { 
+                    $0.id.lowercased() == updatedPost.id.lowercased() 
+                }) {
+                    let oldPost = generatedPosts[index]
+                    if oldPost.status != updatedPost.status || 
+                       oldPost.instagramPostId != updatedPost.instagramPostId ||
+                       oldPost.instagramPermalink != updatedPost.instagramPermalink {
+                        print("📊 Post status: \(oldPost.status.rawValue) → \(updatedPost.status.rawValue)")
+                        generatedPosts[index] = updatedPost
+                        hasChanges = true
+                    }
+                } else {
+                    // New post not in local array
+                    generatedPosts.append(updatedPost)
+                    hasChanges = true
+                }
+            }
+            
+            if hasChanges {
+                // Force UI update by explicitly setting the property
+                await MainActor.run {
+                    self.objectWillChange.send()
+                }
+            }
+            
+            lastRefreshTime = Date()
+        } catch {
+            print("❌ Failed to refresh posts: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Start auto-refresh timer for post statuses
+    func startAutoRefresh() {
+        stopAutoRefresh() // Clean up any existing timer
+        
+        // Create timer and add to main run loop
+        let timer = Timer(timeInterval: 30.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                await self.refreshPostStatuses()
+            }
+        }
+        
+        // Add to run loop with common mode so it runs even during scrolling
+        RunLoop.main.add(timer, forMode: .common)
+        refreshTimer = timer
+        
+        // Fire immediately for first refresh
+        timer.fire()
+    }
+    
+    /// Stop auto-refresh timer
+    func stopAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
     }
     
     // MARK: - Media Management
@@ -186,7 +255,10 @@ class CampaignViewModel: ObservableObject {
     }
     
     func updatePostCaption(postId: String, newCaption: String) {
-        if let index = generatedPosts.firstIndex(where: { $0.id == postId }) {
+        // Use case-insensitive comparison to avoid issues with UUID casing
+        if let index = generatedPosts.firstIndex(where: { 
+            $0.id.lowercased() == postId.lowercased() 
+        }) {
             generatedPosts[index].caption = newCaption
             
             // Save to database
@@ -224,7 +296,8 @@ class CampaignViewModel: ObservableObject {
     }
     
     func deletePost(_ post: GeneratedPost) {
-        generatedPosts.removeAll { $0.id == post.id }
+        // Use case-insensitive comparison to avoid issues with UUID casing
+        generatedPosts.removeAll { $0.id.lowercased() == post.id.lowercased() }
         
         // Delete from database
         Task {
@@ -321,7 +394,8 @@ class CampaignViewModel: ObservableObject {
                 let posts = try await supabaseService.fetchGeneratedPosts()
                 generatedPosts = posts.filter { post in
                     // Filter posts that belong to this campaign's media items
-                    mediaItems.contains { $0.id == post.mediaItemId }
+                    // Use case-insensitive comparison
+                    mediaItems.contains { $0.id.lowercased() == post.mediaItemId.lowercased() }
                 }
             } catch {
                 errorMessage = "Failed to load posts: \(error.localizedDescription)"

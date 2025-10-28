@@ -43,6 +43,9 @@
 		CE409FCA2EA9341D006A2BF2 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC92EA9341D006A2BF2 /* Realtime */; };
 		CE409FCC2EA9341D006A2BF2 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FCB2EA9341D006A2BF2 /* Storage */; };
 		CE409FCE2EA9341D006A2BF2 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FCD2EA9341D006A2BF2 /* Supabase */; };
+		CEAE77262EAFCB7B00D1A777 /* InstagramConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */; };
+		CEAE77282EAFCBA000D1A777 /* InstagramService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77272EAFCBA000D1A777 /* InstagramService.swift */; };
+		CEAE772A2EAFCBBC00D1A777 /* InstagramAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,9 +78,12 @@
 		B0000019 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		B000001A /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		B000001B /* PostPreviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPreviewCard.swift; sourceTree = "<group>"; };
-		B000001D /* DraftCampaign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCampaign.swift; sourceTree = "<group>"; };
 		B000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B000001D /* DraftCampaign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCampaign.swift; sourceTree = "<group>"; };
 		C0000001 /* AIMarketerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIMarketerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramConnection.swift; sourceTree = "<group>"; };
+		CEAE77272EAFCBA000D1A777 /* InstagramService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramService.swift; sourceTree = "<group>"; };
+		CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramAuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +143,7 @@
 				B0000007 /* PostSchedule.swift */,
 				B0000008 /* GeneratedPost.swift */,
 				B000001D /* DraftCampaign.swift */,
+				CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -171,6 +178,7 @@
 				B0000009 /* AuthenticationService.swift */,
 				B000000A /* ContentGenerationService.swift */,
 				B000000A1 /* SupabaseService.swift */,
+				CEAE77272EAFCBA000D1A777 /* InstagramService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -181,6 +189,7 @@
 				B000000D /* WelcomeView.swift */,
 				B000000E /* SignInView.swift */,
 				B000000F /* SignUpView.swift */,
+				CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -320,9 +329,12 @@
 				A000000D /* WelcomeView.swift in Sources */,
 				A000000E /* SignInView.swift in Sources */,
 				A000000F /* SignUpView.swift in Sources */,
+				CEAE77282EAFCBA000D1A777 /* InstagramService.swift in Sources */,
 				A0000010 /* MainTabView.swift in Sources */,
 				A0000011 /* HomeView.swift in Sources */,
 				A0000012 /* CreateCampaignView.swift in Sources */,
+				CEAE772A2EAFCBBC00D1A777 /* InstagramAuthView.swift in Sources */,
+				CEAE77262EAFCB7B00D1A777 /* InstagramConnection.swift in Sources */,
 				A0000013 /* MediaUploadSection.swift in Sources */,
 				A0000014 /* MarketingPlanSection.swift in Sources */,
 				A0000015 /* SchedulingSection.swift in Sources */,

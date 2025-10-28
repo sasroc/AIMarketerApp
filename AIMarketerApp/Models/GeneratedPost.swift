@@ -8,13 +8,34 @@ struct GeneratedPost: Identifiable, Codable {
     var status: PostStatus
     var createdAt: Date
     
-    init(id: String = UUID().uuidString, caption: String, mediaItemId: String, scheduledDate: Date, status: PostStatus = .pending, createdAt: Date = Date()) {
+    // Instagram publishing fields
+    var instagramPostId: String?
+    var instagramPermalink: String?
+    var publishedAt: Date?
+    var errorMessage: String?
+    
+    init(
+        id: String = UUID().uuidString,
+        caption: String,
+        mediaItemId: String,
+        scheduledDate: Date,
+        status: PostStatus = .pending,
+        createdAt: Date = Date(),
+        instagramPostId: String? = nil,
+        instagramPermalink: String? = nil,
+        publishedAt: Date? = nil,
+        errorMessage: String? = nil
+    ) {
         self.id = id
         self.caption = caption
         self.mediaItemId = mediaItemId
         self.scheduledDate = scheduledDate
         self.status = status
         self.createdAt = createdAt
+        self.instagramPostId = instagramPostId
+        self.instagramPermalink = instagramPermalink
+        self.publishedAt = publishedAt
+        self.errorMessage = errorMessage
     }
 }
 

@@ -3,6 +3,7 @@ import SwiftUI
 struct ScheduleView: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var selectedFilter: PostStatus?
+    @State private var isRefreshing = false
     
     var body: some View {
         NavigationStack {
@@ -51,6 +52,24 @@ struct ScheduleView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 16) {
+                                // Refresh indicator
+                                if let lastRefresh = campaignViewModel.lastRefreshTime {
+                                    HStack {
+                                        Image(systemName: "clock.arrow.circlepath")
+                                            .font(.caption)
+                                        Text("Updated \(timeAgoString(from: lastRefresh))")
+                                            .font(.caption)
+                                        Spacer()
+                                        if isRefreshing {
+                                            ProgressView()
+                                                .scaleEffect(0.7)
+                                        }
+                                    }
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal)
+                                    .padding(.top, 8)
+                                }
+                                
                                 if selectedFilter == .draft {
                                     ForEach(campaignViewModel.draftCampaigns) { draft in
                                         DraftCard(draft: draft)
@@ -65,12 +84,48 @@ struct ScheduleView: View {
                             }
                             .padding(.vertical)
                         }
+                        .refreshable {
+                            await refreshPosts()
+                        }
                     }
                 }
                 .frame(maxHeight: .infinity, alignment: .top)
             }
             .navigationTitle("Schedule")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                // Start auto-refresh when view appears
+                campaignViewModel.startAutoRefresh()
+                
+                // Do an immediate refresh
+                Task {
+                    await campaignViewModel.refreshPostStatuses()
+                }
+            }
+            .onDisappear {
+                // Stop auto-refresh when view disappears to save resources
+                campaignViewModel.stopAutoRefresh()
+            }
+        }
+    }
+    
+    private func refreshPosts() async {
+        isRefreshing = true
+        await campaignViewModel.refreshPostStatuses()
+        isRefreshing = false
+    }
+    
+    private func timeAgoString(from date: Date) -> String {
+        let seconds = Int(Date().timeIntervalSince(date))
+        
+        if seconds < 60 {
+            return "just now"
+        } else if seconds < 3600 {
+            let minutes = seconds / 60
+            return "\(minutes)m ago"
+        } else {
+            let hours = seconds / 3600
+            return "\(hours)h ago"
         }
     }
     

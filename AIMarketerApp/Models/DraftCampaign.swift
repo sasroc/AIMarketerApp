@@ -10,11 +10,17 @@ struct DraftCampaign: Identifiable, Codable {
     
     init(
         id: String = UUID().uuidString,
-        mediaItems: [MediaItem],
-        marketingPlan: MarketingPlan,
-        schedule: PostSchedule,
-        currentStep: Int,
-        updatedAt: Date
+        mediaItems: [MediaItem] = [],
+        marketingPlan: MarketingPlan = MarketingPlan(
+            description: "",
+            targetAudience: "",
+            tone: .casual,
+            hashtags: [],
+            callToAction: ""
+        ),
+        schedule: PostSchedule = PostSchedule(),
+        currentStep: Int = 0,
+        updatedAt: Date = Date()
     ) {
         self.id = id
         self.mediaItems = mediaItems
@@ -24,3 +30,5 @@ struct DraftCampaign: Identifiable, Codable {
         self.updatedAt = updatedAt
     }
 }
+
+

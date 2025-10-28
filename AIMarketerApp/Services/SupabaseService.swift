@@ -30,10 +30,9 @@ class SupabaseService {
     private func getCurrentUserId() async throws -> UUID {
         guard let session = try? await supabase.auth.session,
               let userId = UUID(uuidString: session.user.id.uuidString) else {
-            print("❌ No authenticated session found")
+            print("❌ No authenticated session")
             throw SupabaseError.notAuthenticated
         }
-        print("✅ Current user ID: \(userId.uuidString)")
         return userId
     }
     
@@ -209,7 +208,6 @@ extension SupabaseService {
             created_at: item.createdAt
         )
         
-        print("💾 Upserting media item: \(item.id)")
         let response: DatabaseMediaItem = try await supabase
             .from("media_items")
             .upsert(dbMedia)
@@ -217,8 +215,6 @@ extension SupabaseService {
             .single()
             .execute()
             .value
-        
-        print("✅ Media item upserted successfully")
         return MediaItem(
             id: response.id?.uuidString ?? item.id,
             type: MediaType(rawValue: response.type) ?? .image,
@@ -431,10 +427,12 @@ extension SupabaseService {
             scheduled_date: post.scheduledDate,
             status: post.status.rawValue,
             created_at: post.createdAt,
-            updated_at: Date()
+            updated_at: Date(),
+            instagram_post_id: post.instagramPostId,
+            instagram_permalink: post.instagramPermalink,
+            published_at: post.publishedAt,
+            error_message: post.errorMessage
         )
-        
-        print("💾 Upserting post: \(post.id) with status: \(post.status.rawValue)")
         
         do {
             let response: DatabaseGeneratedPost = try await supabase
@@ -445,37 +443,32 @@ extension SupabaseService {
                 .execute()
                 .value
             
-            print("✅ Post upserted successfully")
-            
             return GeneratedPost(
                 id: response.id.uuidString,
                 caption: response.caption,
                 mediaItemId: response.media_item_id?.uuidString ?? post.mediaItemId,
                 scheduledDate: response.scheduled_date,
                 status: PostStatus(rawValue: response.status) ?? .pending,
-                createdAt: response.created_at
+                createdAt: response.created_at,
+                instagramPostId: response.instagram_post_id,
+                instagramPermalink: response.instagram_permalink,
+                publishedAt: response.published_at,
+                errorMessage: response.error_message
             )
         } catch {
-            print("❌ Failed to upsert post: \(error)")
-            print("   Post ID: \(post.id)")
-            print("   Status: \(post.status.rawValue)")
-            print("   Media Item ID: \(post.mediaItemId)")
+            print("❌ Failed to save post: \(error.localizedDescription)")
             throw error
         }
     }
     
     func saveGeneratedPosts(_ posts: [GeneratedPost], campaignId: String?) async throws {
-        print("💾 Saving \(posts.count) posts to database...")
         for post in posts {
             _ = try await saveGeneratedPost(post, campaignId: campaignId)
         }
-        print("✅ All posts saved successfully")
     }
     
     func fetchGeneratedPosts(status: PostStatus? = nil) async throws -> [GeneratedPost] {
         let userId = try await getCurrentUserId()
-        
-        print("🔍 Fetching posts for user: \(userId.uuidString)")
         
         var query = supabase
             .from("generated_posts")
@@ -484,15 +477,12 @@ extension SupabaseService {
         
         if let status = status {
             query = query.eq("status", value: status.rawValue)
-            print("🔍 Filtering by status: \(status.rawValue)")
         }
         
         let response: [DatabaseGeneratedPost] = try await query
             .order("scheduled_date", ascending: true)
             .execute()
             .value
-        
-        print("✅ Fetched \(response.count) posts from database")
         
         return response.map { dbPost in
             GeneratedPost(
@@ -501,7 +491,11 @@ extension SupabaseService {
                 mediaItemId: dbPost.media_item_id?.uuidString ?? "",
                 scheduledDate: dbPost.scheduled_date,
                 status: PostStatus(rawValue: dbPost.status) ?? .pending,
-                createdAt: dbPost.created_at
+                createdAt: dbPost.created_at,
+                instagramPostId: dbPost.instagram_post_id,
+                instagramPermalink: dbPost.instagram_permalink,
+                publishedAt: dbPost.published_at,
+                errorMessage: dbPost.error_message
             )
         }
     }
@@ -522,18 +516,115 @@ extension SupabaseService {
             .execute()
     }
     
+    // MARK: - Instagram Connection
+    
+    func saveInstagramConnection(_ connection: InstagramConnection) async throws -> InstagramConnection {
+        let userId = try await getCurrentUserId()
+        
+        let dbConnection = DatabaseInstagramConnection(
+            id: UUID(uuidString: connection.id),
+            user_id: userId,
+            instagram_user_id: connection.instagramUserId,
+            instagram_username: connection.instagramUsername,
+            facebook_page_id: connection.facebookPageId,
+            facebook_page_name: connection.facebookPageName,
+            access_token: connection.accessToken,
+            token_expires_at: connection.tokenExpiresAt,
+            is_connected: connection.isConnected,
+            last_token_refresh: connection.lastTokenRefresh,
+            connected_at: connection.connectedAt,
+            updated_at: Date()
+        )
+        
+        let response: DatabaseInstagramConnection = try await supabase
+            .from("instagram_connections")
+            .upsert(dbConnection)
+            .select()
+            .single()
+            .execute()
+            .value
+        return InstagramConnection(
+            id: response.id?.uuidString ?? connection.id,
+            userId: response.user_id.uuidString,
+            instagramUserId: response.instagram_user_id,
+            instagramUsername: response.instagram_username,
+            facebookPageId: response.facebook_page_id,
+            facebookPageName: response.facebook_page_name,
+            accessToken: response.access_token,
+            tokenExpiresAt: response.token_expires_at,
+            isConnected: response.is_connected,
+            lastTokenRefresh: response.last_token_refresh,
+            connectedAt: response.connected_at,
+            updatedAt: response.updated_at
+        )
+    }
+    
+    func fetchInstagramConnection() async throws -> InstagramConnection? {
+        let userId = try await getCurrentUserId()
+        
+        do {
+            let response: DatabaseInstagramConnection = try await supabase
+                .from("instagram_connections")
+                .select()
+                .eq("user_id", value: userId.uuidString)
+                .single()
+                .execute()
+                .value
+            
+            return InstagramConnection(
+                id: response.id?.uuidString ?? UUID().uuidString,
+                userId: response.user_id.uuidString,
+                instagramUserId: response.instagram_user_id,
+                instagramUsername: response.instagram_username,
+                facebookPageId: response.facebook_page_id,
+                facebookPageName: response.facebook_page_name,
+                accessToken: response.access_token,
+                tokenExpiresAt: response.token_expires_at,
+                isConnected: response.is_connected,
+                lastTokenRefresh: response.last_token_refresh,
+                connectedAt: response.connected_at,
+                updatedAt: response.updated_at
+            )
+        } catch {
+            // No connection found
+            return nil
+        }
+    }
+    
+    func disconnectInstagram() async throws {
+        let userId = try await getCurrentUserId()
+        
+        try await supabase
+            .from("instagram_connections")
+            .delete()
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+    }
+    
+    func updateInstagramConnectionToken(
+        accessToken: String,
+        expiresAt: Date
+    ) async throws {
+        let userId = try await getCurrentUserId()
+        
+        try await supabase
+            .from("instagram_connections")
+            .update([
+                "access_token": accessToken,
+                "token_expires_at": expiresAt.ISO8601Format(),
+                "last_token_refresh": Date().ISO8601Format(),
+                "updated_at": Date().ISO8601Format()
+            ])
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+    }
+    
     // MARK: - Media Upload/Download
     
     func uploadMedia(data: Data, fileName: String, contentType: String) async throws -> String {
         let userId = try await getCurrentUserId()
         let userIdString = userId.uuidString.lowercased()  // Use lowercase to match PostgreSQL
         let filePath = "\(userIdString)/\(fileName)"
-        
-        print("☁️ Attempting storage upload:")
-        print("   - User ID: \(userIdString)")
-        print("   - File path: \(filePath)")
-        print("   - Content type: \(contentType)")
-        print("   - File size: \(data.count) bytes")
         
         do {
             try await supabase.storage
@@ -544,19 +635,14 @@ extension SupabaseService {
                     options: FileOptions(contentType: contentType)
                 )
             
-            print("✅ Storage upload successful")
-            
             // Get public URL
             let publicURL = try supabase.storage
                 .from("media-uploads")
                 .getPublicURL(path: filePath)
             
-            print("   - Public URL: \(publicURL.absoluteString)")
             return publicURL.absoluteString
         } catch {
-            print("❌ Storage upload failed: \(error)")
-            print("   - Error type: \(type(of: error))")
-            print("   - Error description: \(error.localizedDescription)")
+            print("❌ Storage upload failed: \(error.localizedDescription)")
             throw SupabaseError.uploadFailed
         }
     }
@@ -620,6 +706,25 @@ struct DatabaseGeneratedPost: Codable {
     let scheduled_date: Date
     let status: String
     let created_at: Date
+    let updated_at: Date
+    let instagram_post_id: String?
+    let instagram_permalink: String?
+    let published_at: Date?
+    let error_message: String?
+}
+
+struct DatabaseInstagramConnection: Codable {
+    let id: UUID?
+    let user_id: UUID
+    let instagram_user_id: String
+    let instagram_username: String
+    let facebook_page_id: String
+    let facebook_page_name: String?
+    let access_token: String
+    let token_expires_at: Date
+    let is_connected: Bool
+    let last_token_refresh: Date
+    let connected_at: Date
     let updated_at: Date
 }
 

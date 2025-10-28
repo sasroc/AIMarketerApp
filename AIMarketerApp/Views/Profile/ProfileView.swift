@@ -3,6 +3,11 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @State private var showingSignOutAlert = false
+    @State private var showInstagramAuth = false
+    @State private var showDisconnectAlert = false
+    @State private var isLoadingConnection = false
+    @State private var instagramConnection: InstagramConnection?
+    @State private var connectionError: String?
     
     var body: some View {
         NavigationStack {
@@ -47,32 +52,143 @@ struct ProfileView: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal)
                             
-                            Button(action: {}) {
-                                HStack {
-                                    Image(systemName: "camera.fill")
-                                        .foregroundColor(.marketingPrimary)
-                                        .frame(width: 32)
+                            VStack(spacing: 0) {
+                                // Instagram connection row
+                                HStack(spacing: 16) {
+                                    // Icon
+                                    ZStack {
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color.pink, Color.purple, Color.orange],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 44, height: 44)
+                                        
+                                        Image(systemName: "camera.fill")
+                                            .foregroundColor(.white)
+                                            .font(.system(size: 20))
+                                    }
                                     
+                                    // Connection info
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("Instagram")
                                             .font(.headline)
                                             .foregroundColor(.white)
                                         
-                                        Text(authViewModel.currentUser?.instagramConnected == true ? "Connected" : "Not connected")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
+                                        if let connection = instagramConnection, connection.isConnected {
+                                            Text("@\(connection.instagramUsername)")
+                                                .font(.subheadline)
+                                                .foregroundColor(.marketingPrimary)
+                                        } else {
+                                            Text("Not connected")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
                                     
                                     Spacer()
                                     
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.gray)
+                                    // Action button
+                                    if isLoadingConnection {
+                                        ProgressView()
+                                            .tint(.marketingPrimary)
+                                    } else if let connection = instagramConnection, connection.isConnected {
+                                        Button(action: { showDisconnectAlert = true }) {
+                                            Text("Disconnect")
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.marketingError)
+                                        }
+                                    } else {
+                                        Button(action: { showInstagramAuth = true }) {
+                                            Text("Connect")
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.marketingPrimary)
+                                        }
+                                    }
                                 }
                                 .padding()
-                                .background(Color.marketingCardBackground)
-                                .cornerRadius(12)
+                                
+                                // Token expiration warning
+                                if let connection = instagramConnection, connection.needsTokenRefresh {
+                                    VStack(spacing: 8) {
+                                        Divider()
+                                            .background(Color.gray.opacity(0.3))
+                                        
+                                        HStack(spacing: 12) {
+                                            Image(systemName: "exclamationmark.triangle.fill")
+                                                .foregroundColor(.yellow)
+                                                .font(.system(size: 16))
+                                            
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text("Token Expiring Soon")
+                                                    .font(.subheadline)
+                                                    .fontWeight(.medium)
+                                                    .foregroundColor(.white)
+                                                
+                                                Text("Reconnect to continue scheduling posts")
+                                                    .font(.caption)
+                                                    .foregroundColor(.gray)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            Button(action: { showInstagramAuth = true }) {
+                                                Text("Refresh")
+                                                    .font(.caption)
+                                                    .fontWeight(.medium)
+                                                    .foregroundColor(.marketingPrimary)
+                                            }
+                                        }
+                                        .padding(.horizontal)
+                                        .padding(.bottom)
+                                    }
+                                }
+                                
+                                // Connection info
+                                if instagramConnection != nil {
+                                    VStack(spacing: 8) {
+                                        Divider()
+                                            .background(Color.gray.opacity(0.3))
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack {
+                                                Image(systemName: "info.circle")
+                                                    .foregroundColor(.gray)
+                                                    .font(.caption)
+                                                
+                                                Text("Your Instagram Business account is connected and ready to schedule posts.")
+                                                    .font(.caption)
+                                                    .foregroundColor(.gray)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                            }
+                                        }
+                                        .padding(.horizontal)
+                                        .padding(.bottom)
+                                    }
+                                }
                             }
+                            .background(Color.marketingCardBackground)
+                            .cornerRadius(12)
                             .padding(.horizontal)
+                            
+                            // Error message
+                            if let error = connectionError {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "exclamationmark.circle.fill")
+                                        .foregroundColor(.marketingError)
+                                    
+                                    Text(error)
+                                        .font(.caption)
+                                        .foregroundColor(.marketingError)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(.horizontal)
+                            }
                         }
                         
                         // Settings sections
@@ -128,6 +244,26 @@ struct ProfileView: View {
             } message: {
                 Text("Are you sure you want to sign out?")
             }
+            .alert("Disconnect Instagram", isPresented: $showDisconnectAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Disconnect", role: .destructive) {
+                    Task {
+                        await disconnectInstagram()
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to disconnect your Instagram account? You won't be able to schedule new posts until you reconnect.")
+            }
+            .sheet(isPresented: $showInstagramAuth) {
+                InstagramAuthView { connection in
+                    Task {
+                        await saveInstagramConnection(connection)
+                    }
+                }
+            }
+            .task {
+                await loadInstagramConnection()
+            }
         }
     }
     
@@ -140,6 +276,52 @@ struct ProfileView: View {
             return String(first.prefix(1)).uppercased()
         }
         return "U"
+    }
+    
+    // MARK: - Instagram Connection Methods
+    
+    private func loadInstagramConnection() async {
+        do {
+            instagramConnection = try await SupabaseService.shared.fetchInstagramConnection()
+        } catch {
+            print("Error loading Instagram connection: \(error)")
+        }
+    }
+    
+    private func saveInstagramConnection(_ connection: InstagramConnection) async {
+        isLoadingConnection = true
+        connectionError = nil
+        
+        do {
+            let savedConnection = try await SupabaseService.shared.saveInstagramConnection(connection)
+            await MainActor.run {
+                instagramConnection = savedConnection
+                isLoadingConnection = false
+            }
+        } catch {
+            await MainActor.run {
+                connectionError = "Failed to save Instagram connection: \(error.localizedDescription)"
+                isLoadingConnection = false
+            }
+        }
+    }
+    
+    private func disconnectInstagram() async {
+        isLoadingConnection = true
+        connectionError = nil
+        
+        do {
+            try await SupabaseService.shared.disconnectInstagram()
+            await MainActor.run {
+                instagramConnection = nil
+                isLoadingConnection = false
+            }
+        } catch {
+            await MainActor.run {
+                connectionError = "Failed to disconnect Instagram: \(error.localizedDescription)"
+                isLoadingConnection = false
+            }
+        }
     }
 }
 

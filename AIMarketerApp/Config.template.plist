@@ -6,5 +6,9 @@
 	<string>YOUR_SUPABASE_URL_HERE</string>
 	<key>SupabaseKey</key>
 	<string>YOUR_SUPABASE_ANON_KEY_HERE</string>
+	<key>FacebookAppId</key>
+	<string>YOUR_FACEBOOK_APP_ID_HERE</string>
+	<key>FacebookAppSecret</key>
+	<string>YOUR_FACEBOOK_APP_SECRET_HERE</string>
 </dict>
 </plist>
