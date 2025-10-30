@@ -4,6 +4,7 @@ struct GeneratedPostsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var showingScheduleConfirmation = false
+    @Binding var shouldDismissToHome: Bool
     
     var body: some View {
         NavigationStack {
@@ -105,7 +106,12 @@ struct GeneratedPostsView: View {
     
     private func schedulePosts() {
         campaignViewModel.scheduleAllPosts()
+        // First dismiss the sheet
         dismiss()
+        // Then signal to dismiss the entire campaign flow and return to home
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            shouldDismissToHome = true
+        }
     }
 }
 
@@ -451,7 +457,7 @@ struct SimpleTextEditor: UIViewRepresentable {
 }
 
 #Preview {
-    GeneratedPostsView()
+    GeneratedPostsView(shouldDismissToHome: .constant(false))
         .environmentObject(CampaignViewModel())
 }
 

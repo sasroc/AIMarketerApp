@@ -2,6 +2,10 @@ import SwiftUI
 
 struct SchedulingSection: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
+    @State private var showingStartDatePicker = false
+    @State private var showingEndDatePicker = false
+    @State private var tempStartDate = Date()
+    @State private var tempEndDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -23,46 +27,94 @@ struct SchedulingSection: View {
                     .foregroundColor(.white)
                 
                 VStack(spacing: 12) {
-                    HStack {
-                        Text("Start Date")
-                            .foregroundColor(.gray)
-                            .frame(width: 100, alignment: .leading)
-                        
-                        DatePicker(
-                            "",
-                            selection: Binding(
-                                get: { campaignViewModel.schedule.startDate ?? Date() },
-                                set: { campaignViewModel.schedule.startDate = $0 }
-                            ),
-                            in: Date()...,
-                            displayedComponents: .date
-                        )
-                        .labelsHidden()
+                    // Start Date Button
+                    Button(action: { 
+                        tempStartDate = campaignViewModel.schedule.startDate ?? Date()
+                        showingStartDatePicker = true 
+                    }) {
+                        HStack {
+                            Text("Start Date")
+                                .foregroundColor(.gray)
+                                .frame(width: 100, alignment: .leading)
+                            
+                            Spacer()
+                            
+                            if let startDate = campaignViewModel.schedule.startDate {
+                                Text(formatDate(startDate))
+                                    .foregroundColor(.white)
+                            } else {
+                                Text("Select date")
+                                    .foregroundColor(.marketingPrimary)
+                            }
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                        .background(Color.marketingCardBackground)
+                        .cornerRadius(12)
                     }
-                    .padding()
-                    .background(Color.marketingCardBackground)
-                    .cornerRadius(12)
                     
-                    HStack {
-                        Text("End Date")
-                            .foregroundColor(.gray)
-                            .frame(width: 100, alignment: .leading)
-                        
-                        DatePicker(
-                            "",
-                            selection: Binding(
-                                get: { campaignViewModel.schedule.endDate ?? Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date() },
-                                set: { campaignViewModel.schedule.endDate = $0 }
-                            ),
-                            in: (campaignViewModel.schedule.startDate ?? Date())...,
-                            displayedComponents: .date
-                        )
-                        .labelsHidden()
+                    // End Date Button
+                    Button(action: { 
+                        tempEndDate = campaignViewModel.schedule.endDate ?? Calendar.current.date(byAdding: .day, value: 7, to: campaignViewModel.schedule.startDate ?? Date()) ?? Date()
+                        showingEndDatePicker = true 
+                    }) {
+                        HStack {
+                            Text("End Date")
+                                .foregroundColor(.gray)
+                                .frame(width: 100, alignment: .leading)
+                            
+                            Spacer()
+                            
+                            if let endDate = campaignViewModel.schedule.endDate {
+                                Text(formatDate(endDate))
+                                    .foregroundColor(.white)
+                            } else {
+                                Text("Select date")
+                                    .foregroundColor(.marketingPrimary)
+                            }
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                        .background(Color.marketingCardBackground)
+                        .cornerRadius(12)
                     }
-                    .padding()
-                    .background(Color.marketingCardBackground)
-                    .cornerRadius(12)
                 }
+            }
+            .sheet(isPresented: $showingStartDatePicker) {
+                DatePickerSheet(
+                    title: "Start Date",
+                    selectedDate: $tempStartDate,
+                    minimumDate: Calendar.current.startOfDay(for: Date()),
+                    maximumDate: nil,
+                    onSave: {
+                        campaignViewModel.schedule.startDate = tempStartDate
+                        showingStartDatePicker = false
+                    },
+                    onCancel: {
+                        showingStartDatePicker = false
+                    }
+                )
+            }
+            .sheet(isPresented: $showingEndDatePicker) {
+                DatePickerSheet(
+                    title: "End Date",
+                    selectedDate: $tempEndDate,
+                    minimumDate: campaignViewModel.schedule.startDate ?? Calendar.current.startOfDay(for: Date()),
+                    maximumDate: nil,
+                    onSave: {
+                        campaignViewModel.schedule.endDate = tempEndDate
+                        showingEndDatePicker = false
+                    },
+                    onCancel: {
+                        showingEndDatePicker = false
+                    }
+                )
             }
             
             // Day selector
@@ -221,6 +273,12 @@ struct SchedulingSection: View {
             }
         )
     }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
 }
 
 struct DayButton: View {
@@ -238,6 +296,55 @@ struct DayButton: View {
                 .foregroundColor(isSelected ? .white : .gray)
                 .cornerRadius(12)
         }
+    }
+}
+
+struct DatePickerSheet: View {
+    let title: String
+    @Binding var selectedDate: Date
+    let minimumDate: Date
+    let maximumDate: Date?
+    let onSave: () -> Void
+    let onCancel: () -> Void
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                
+                VStack {
+                    DatePicker(
+                        "",
+                        selection: $selectedDate,
+                        in: minimumDate...(maximumDate ?? Date.distantFuture),
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .padding()
+                    
+                    Spacer()
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        onCancel()
+                    }
+                    .foregroundColor(.marketingPrimary)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        onSave()
+                    }
+                    .foregroundColor(.marketingPrimary)
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 

@@ -4,6 +4,7 @@ struct CreateCampaignView: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showingGeneratedPosts = false
+    @State private var shouldDismissToHome = false
     
     var body: some View {
         NavigationStack {
@@ -117,7 +118,18 @@ struct CreateCampaignView: View {
                 }
             }
             .sheet(isPresented: $showingGeneratedPosts) {
-                GeneratedPostsView()
+                GeneratedPostsView(shouldDismissToHome: $shouldDismissToHome)
+            }
+            .onChange(of: shouldDismissToHome) { newValue in
+                if newValue {
+                    // Dismiss the entire campaign creation flow
+                    dismiss()
+                    // Reset the flag and the campaign
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        shouldDismissToHome = false
+                        campaignViewModel.resetCampaign()
+                    }
+                }
             }
         }
     }

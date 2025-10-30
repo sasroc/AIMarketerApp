@@ -183,7 +183,7 @@ async function generateCaption(
         messages: [
           {
             role: 'system',
-            content: 'You are a professional social media content creator. Generate engaging, platform-appropriate captions that match the specified tone and target audience. IMPORTANT: Only return the caption text itself - do not include any meta information, post numbers, or context details in your response.'
+            content: 'You are a professional social media content creator. Generate engaging, platform-appropriate captions that match the specified tone and target audience. IMPORTANT: Only return the caption text itself - do not include any meta information, post numbers, context details, or surrounding quotes in your response. Never wrap your response in quotation marks.'
           },
           {
             role: 'user',
@@ -332,7 +332,16 @@ function cleanCaption(caption: string): string {
     cleaned = cleaned.replace(pattern, '')
   }
   
-  return cleaned.trim()
+  cleaned = cleaned.trim()
+  
+  // Remove surrounding quotes (both single and double)
+  // This handles cases where AI wraps the entire caption in quotes
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+      (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1).trim()
+  }
+  
+  return cleaned
 }
 
 function createFallbackCaption(marketingPlan: MarketingPlanRequest): string {

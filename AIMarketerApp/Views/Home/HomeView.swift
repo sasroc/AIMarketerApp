@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @EnvironmentObject var campaignViewModel: CampaignViewModel
+    @State private var isFirstAppear = true
     
     var body: some View {
         NavigationStack {
@@ -130,6 +131,15 @@ struct HomeView: View {
                         .foregroundColor(.marketingPrimary)
                     }
                 }
+            }
+            .onAppear {
+                // Refresh data every time the view appears (except first time since init loads it)
+                if !isFirstAppear {
+                    Task {
+                        await campaignViewModel.loadUserData()
+                    }
+                }
+                isFirstAppear = false
             }
         }
     }

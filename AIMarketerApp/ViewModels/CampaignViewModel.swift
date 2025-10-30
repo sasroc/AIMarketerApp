@@ -316,7 +316,8 @@ class CampaignViewModel: ObservableObject {
         mediaItems = []
         marketingPlan = MarketingPlan()
         schedule = PostSchedule()
-        generatedPosts = []
+        // Don't clear generatedPosts - they should persist and be visible on home screen
+        // generatedPosts = []
         currentStep = 0
         currentCampaignId = nil
         errorMessage = nil
