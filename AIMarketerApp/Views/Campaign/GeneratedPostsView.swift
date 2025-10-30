@@ -183,79 +183,132 @@ struct EditablePostCard: View {
                 }
             }
             
+            // Error message if post failed
+            if post.status == .failed, let errorMessage = post.errorMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.marketingError)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.marketingError)
+                }
+                .padding(12)
+                .background(Color.marketingError.opacity(0.1))
+                .cornerRadius(8)
+            }
+            
             // Media preview
             if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
                 Group {
                     if let thumbnail = mediaItem.thumbnail {
-                        // Display local thumbnail if available
-                        Image(uiImage: thumbnail)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 200)
-                            .clipped()
-                            .cornerRadius(12)
-                            .allowsHitTesting(false)
-                            .onAppear {
-                                print("🖼️ Displaying local thumbnail for post: \(post.id)")
+                        // Display local thumbnail if available (works for both images and videos)
+                        ZStack {
+                            Image(uiImage: thumbnail)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                                .clipped()
+                                .cornerRadius(12)
+                                .allowsHitTesting(false)
+                            
+                            // Video indicator
+                            if mediaItem.type == .video {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.white)
+                                    .shadow(radius: 5)
                             }
+                        }
                     } else if let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
                         // Display from cloud URL
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
-                                ProgressView()
+                        if mediaItem.type == .image {
+                            // For images, use AsyncImage
+                            ZStack {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                case .empty:
+                                    ProgressView()
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 200)
+                                        .background(Color.gray.opacity(0.3))
+                                        .cornerRadius(12)
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 200)
+                                        .clipped()
+                                        .cornerRadius(12)
+                                        .allowsHitTesting(false)
+                                case .failure:
+                                    VStack {
+                                        Image(systemName: "photo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .foregroundColor(.gray)
+                                        Text("Failed to load")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 200)
                                     .background(Color.gray.opacity(0.3))
                                     .cornerRadius(12)
-                                    .onAppear {
-                                        print("⏳ Loading image from cloud: \(cloudURL)")
+                                    @unknown default:
+                                        EmptyView()
                                     }
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 200)
-                                    .clipped()
-                                    .cornerRadius(12)
-                                    .allowsHitTesting(false)
-                                    .onAppear {
-                                        print("✅ Successfully loaded image from cloud for post: \(post.id)")
+                                }
+                            }
+                        } else {
+                            // For videos, try to load thumbnail from thumbnailURL
+                            if let thumbnailURL = mediaItem.thumbnailURL, let thumbUrl = URL(string: thumbnailURL) {
+                                ZStack {
+                                    AsyncImage(url: thumbUrl) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            ProgressView()
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 200)
+                                                .background(Color.gray.opacity(0.3))
+                                                .cornerRadius(12)
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 200)
+                                                .clipped()
+                                                .cornerRadius(12)
+                                        case .failure:
+                                            videoPlaceholder
+                                        @unknown default:
+                                            EmptyView()
+                                        }
                                     }
-                            case .failure(let error):
-                                VStack {
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50)
-                                        .foregroundColor(.gray)
-                                    Text("Failed to load")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
+                                    
+                                    // Play icon overlay
+                                    Image(systemName: "play.circle.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.white)
+                                        .shadow(radius: 5)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 200)
-                                .background(Color.gray.opacity(0.3))
-                                .cornerRadius(12)
-                                .onAppear {
-                                    print("❌ Failed to load image from cloud: \(cloudURL)")
-                                    print("   Error: \(error)")
-                                }
-                            @unknown default:
-                                EmptyView()
+                            } else {
+                                // No thumbnail URL, show placeholder
+                                videoPlaceholder
                             }
                         }
                     } else {
                         // Fallback placeholder
                         VStack {
-                            Image(systemName: "photo")
+                            Image(systemName: mediaItem.type == .video ? "video" : "photo")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 50, height: 50)
                                 .foregroundColor(.gray)
-                            Text("No image")
+                            Text(mediaItem.type == .video ? "Video (no preview)" : "No image")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
@@ -263,10 +316,6 @@ struct EditablePostCard: View {
                         .frame(height: 200)
                         .background(Color.gray.opacity(0.3))
                         .cornerRadius(12)
-                        .onAppear {
-                            print("⚠️ No image source for post: \(post.id)")
-                            print("   Media item has no thumbnail or cloud URL")
-                        }
                     }
                 }
             } else {
@@ -285,11 +334,6 @@ struct EditablePostCard: View {
                 .frame(height: 200)
                 .background(Color.gray.opacity(0.3))
                 .cornerRadius(12)
-                .onAppear {
-                    print("❌ No media item found for post: \(post.id)")
-                    print("   Post media_item_id: \(post.mediaItemId)")
-                    print("   Available media items: \(campaignViewModel.mediaItems.map { $0.id })")
-                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -333,6 +377,19 @@ struct EditablePostCard: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
         return formatter.string(from: post.scheduledDate)
+    }
+    
+    private var videoPlaceholder: some View {
+        ZStack {
+            Color.gray.opacity(0.3)
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.white)
+                .shadow(radius: 5)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 200)
+        .cornerRadius(12)
     }
 }
 

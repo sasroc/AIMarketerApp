@@ -1,5 +1,7 @@
 import SwiftUI
 import PhotosUI
+import AVFoundation
+import UniformTypeIdentifiers
 
 struct MediaUploadSection: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
@@ -69,30 +71,15 @@ struct MediaUploadSection: View {
     private func loadMedia(from items: [PhotosPickerItem]) {
         Task {
             for item in items {
-                if let data = try? await item.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
-                    
-                    // Save to temporary file
-                    let tempDir = FileManager.default.temporaryDirectory
-                    let fileName = UUID().uuidString + ".jpg"
-                    let fileURL = tempDir.appendingPathComponent(fileName)
-                    
-                    do {
-                        try data.write(to: fileURL)
-                        print("📁 Saved image to temp file: \(fileURL.path)")
-                        
-                        let mediaItem = MediaItem(
-                            type: .image,
-                            thumbnail: image,
-                            localURL: fileURL
-                        )
-                        
-                        await MainActor.run {
-                            campaignViewModel.addMediaItem(mediaItem)
-                        }
-                    } catch {
-                        print("❌ Failed to save image to temp file: \(error)")
-                    }
+                // Check if item is a video
+                let isVideo = checkIfVideo(item)
+                
+                if isVideo {
+                    // Handle video
+                    await loadVideoItem(item)
+                } else {
+                    // Handle image
+                    await loadImageItem(item)
                 }
             }
             
@@ -100,6 +87,94 @@ struct MediaUploadSection: View {
             await MainActor.run {
                 selectedItems = []
             }
+        }
+    }
+    
+    private func checkIfVideo(_ item: PhotosPickerItem) -> Bool {
+        // Check all supported content types, not just the first one
+        for contentType in item.supportedContentTypes {
+            let identifier = contentType.identifier
+            if identifier.contains("movie") || 
+               identifier.contains("video") ||
+               identifier.contains("quicktime") ||
+               contentType.conforms(to: .movie) ||
+               contentType.conforms(to: .video) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func loadImageItem(_ item: PhotosPickerItem) async {
+        if let data = try? await item.loadTransferable(type: Data.self),
+           let image = UIImage(data: data) {
+            
+            // Save to temporary file
+            let tempDir = FileManager.default.temporaryDirectory
+            let fileName = UUID().uuidString + ".jpg"
+            let fileURL = tempDir.appendingPathComponent(fileName)
+            
+            do {
+                try data.write(to: fileURL)
+                
+                let mediaItem = MediaItem(
+                    type: .image,
+                    thumbnail: image,
+                    localURL: fileURL
+                )
+                
+                await MainActor.run {
+                    campaignViewModel.addMediaItem(mediaItem)
+                }
+            } catch {
+                print("❌ Failed to save image: \(error)")
+            }
+        }
+    }
+    
+    private func loadVideoItem(_ item: PhotosPickerItem) async {
+        // Try loading as Data first (more reliable than custom Transferable)
+        guard let videoData = try? await item.loadTransferable(type: Data.self) else {
+            print("❌ Failed to load video data")
+            return
+        }
+        
+        // Save to temporary file
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileName = UUID().uuidString + ".mp4"
+        let fileURL = tempDir.appendingPathComponent(fileName)
+        
+        do {
+            try videoData.write(to: fileURL)
+            
+            // Generate thumbnail from video
+            let thumbnail = await generateVideoThumbnail(url: fileURL)
+            
+            let mediaItem = MediaItem(
+                type: .video,
+                thumbnail: thumbnail,
+                localURL: fileURL
+            )
+            
+            await MainActor.run {
+                campaignViewModel.addMediaItem(mediaItem)
+            }
+        } catch {
+            print("❌ Failed to save video: \(error)")
+        }
+    }
+    
+    private func generateVideoThumbnail(url: URL) async -> UIImage? {
+        let asset = AVAsset(url: url)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        imageGenerator.appliesPreferredTrackTransform = true
+        
+        do {
+            let cgImage = try imageGenerator.copyCGImage(at: .zero, actualTime: nil)
+            return UIImage(cgImage: cgImage)
+        } catch {
+            print("❌ Failed to generate video thumbnail: \(error)")
+            return nil
         }
     }
 }
@@ -117,6 +192,21 @@ struct MediaItemView: View {
                     .frame(width: 110, height: 110)
                     .clipped()
                     .cornerRadius(12)
+                
+                // Video indicator
+                if item.type == .video {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Image(systemName: "play.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .shadow(radius: 2)
+                        }
+                        Spacer()
+                    }
+                    .frame(width: 110, height: 110)
+                }
             }
             
             Button(action: onDelete) {

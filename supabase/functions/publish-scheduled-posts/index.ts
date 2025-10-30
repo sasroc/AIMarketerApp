@@ -11,6 +11,7 @@ interface PostToPublish {
   user_id: string;
   caption: string;
   media_url: string;
+  media_type: string;
   scheduled_date: string;
 }
 
@@ -115,8 +116,8 @@ serve(async (req) => {
           continue;
         }
 
-        // Determine media type from URL
-        const isVideo = post.media_url.match(/\.(mp4|mov|avi)$/i);
+        // Determine media type from database field
+        const isVideo = post.media_type === 'video';
 
         console.log(`📤 Publishing ${isVideo ? "video" : "image"} to Instagram...`);
 
@@ -210,7 +211,7 @@ async function publishToInstagram(
     });
 
     if (isVideo) {
-      containerParams.append("media_type", "VIDEO");
+      containerParams.append("media_type", "REELS");
       containerParams.append("video_url", mediaUrl);
     } else {
       containerParams.append("image_url", mediaUrl);

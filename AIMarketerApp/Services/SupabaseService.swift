@@ -205,6 +205,7 @@ extension SupabaseService {
             user_id: userId,
             type: item.type.rawValue,
             cloud_url: item.cloudURL,
+            thumbnail_url: item.thumbnailURL,
             created_at: item.createdAt
         )
         
@@ -221,6 +222,7 @@ extension SupabaseService {
             thumbnail: item.thumbnail,
             localURL: item.localURL,
             cloudURL: response.cloud_url,
+            thumbnailURL: response.thumbnail_url,
             createdAt: response.created_at
         )
     }
@@ -241,6 +243,7 @@ extension SupabaseService {
                 id: dbItem.id?.uuidString ?? UUID().uuidString,
                 type: MediaType(rawValue: dbItem.type) ?? .image,
                 cloudURL: dbItem.cloud_url,
+                thumbnailURL: dbItem.thumbnail_url,
                 createdAt: dbItem.created_at
             )
         }
@@ -397,6 +400,7 @@ extension SupabaseService {
                     id: dbMedia.id?.uuidString ?? UUID().uuidString,
                     type: MediaType(rawValue: dbMedia.type) ?? .image,
                     cloudURL: dbMedia.cloud_url,
+                    thumbnailURL: dbMedia.thumbnail_url,
                     createdAt: dbMedia.created_at
                 ))
             }
@@ -669,6 +673,7 @@ struct DatabaseMediaItem: Codable {
     let user_id: UUID
     let type: String
     let cloud_url: String?
+    let thumbnail_url: String?
     let created_at: Date
 }
 

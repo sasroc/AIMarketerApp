@@ -12,14 +12,16 @@ struct MediaItem: Identifiable, Equatable, Codable {
     var thumbnailData: Data?
     var localURL: URL?
     var cloudURL: String?
+    var thumbnailURL: String?  // Cloud URL for thumbnail image
     var createdAt: Date
     
-    init(id: String = UUID().uuidString, type: MediaType, thumbnail: UIImage? = nil, localURL: URL? = nil, cloudURL: String? = nil, createdAt: Date = Date()) {
+    init(id: String = UUID().uuidString, type: MediaType, thumbnail: UIImage? = nil, localURL: URL? = nil, cloudURL: String? = nil, thumbnailURL: String? = nil, createdAt: Date = Date()) {
         self.id = id
         self.type = type
         self.thumbnailData = thumbnail?.jpegData(compressionQuality: 0.8)
         self.localURL = localURL
         self.cloudURL = cloudURL
+        self.thumbnailURL = thumbnailURL
         self.createdAt = createdAt
     }
     

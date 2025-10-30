@@ -44,20 +44,44 @@ struct PostPreviewCard: View {
                 .foregroundColor(.white)
                 .lineLimit(3)
             
+            // Error message if post failed
+            if post.status == .failed, let errorMessage = post.errorMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.marketingError)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.marketingError)
+                }
+                .padding(12)
+                .background(Color.marketingError.opacity(0.1))
+                .cornerRadius(8)
+            }
+            
             // Media preview
             if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
                 Group {
                     if let thumbnail = mediaItem.thumbnail {
-                        // Display local thumbnail if available
-                        Image(uiImage: thumbnail)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 200)
-                            .frame(maxWidth: .infinity)
-                            .clipped()
-                            .cornerRadius(12)
-                    } else if let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
-                        // Display from cloud URL
+                        // Display local thumbnail if available (works for both images and videos)
+                        ZStack {
+                            Image(uiImage: thumbnail)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(height: 200)
+                                .frame(maxWidth: .infinity)
+                                .clipped()
+                                .cornerRadius(12)
+                            
+                            // Video indicator
+                            if mediaItem.type == .video {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.white)
+                                    .shadow(radius: 5)
+                            }
+                        }
+                    } else if mediaItem.type == .image, let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
+                        // For images, display from cloud URL
                         AsyncImage(url: url) { phase in
                             switch phase {
                             case .empty:
@@ -85,16 +109,50 @@ struct PostPreviewCard: View {
                                 EmptyView()
                             }
                         }
+                    } else if mediaItem.type == .video, let thumbnailURL = mediaItem.thumbnailURL, let url = URL(string: thumbnailURL) {
+                        // For videos, display thumbnail from thumbnailURL
+                        ZStack {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .clipped()
+                                        .cornerRadius(12)
+                                case .failure:
+                                    videoPlaceholder
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                            
+                            // Play icon overlay
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.white)
+                                .shadow(radius: 5)
+                        }
                     } else {
                         // Fallback placeholder
-                        VStack {
-                            Image(systemName: "photo")
-                            Text("No image")
+                        if mediaItem.type == .video {
+                            videoPlaceholder
+                        } else {
+                            VStack {
+                                Image(systemName: "photo")
+                                Text("No image")
+                            }
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(12)
                         }
-                        .frame(height: 200)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(12)
                     }
                 }
             }
@@ -129,6 +187,19 @@ struct PostPreviewCard: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: post.scheduledDate)
+    }
+    
+    private var videoPlaceholder: some View {
+        ZStack {
+            Color.gray.opacity(0.3)
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.white)
+                .shadow(radius: 5)
+        }
+        .frame(height: 200)
+        .frame(maxWidth: .infinity)
+        .cornerRadius(12)
     }
 }
 

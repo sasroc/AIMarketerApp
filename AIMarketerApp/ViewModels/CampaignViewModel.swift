@@ -164,22 +164,23 @@ class CampaignViewModel: ObservableObject {
     private func saveAndUploadMediaItem(_ item: MediaItem) async {
         do {
             // First, save the media item metadata to database (without cloud URL)
-            print("💾 Saving media item \(item.id) to database...")
-            print("   - Type: \(item.type.rawValue)")
-            print("   - Has thumbnail: \(item.thumbnail != nil)")
-            print("   - Has localURL: \(item.localURL != nil)")
-            print("   - LocalURL: \(item.localURL?.absoluteString ?? "nil")")
-            print("   - Has cloudURL: \(item.cloudURL != nil)")
-            
             var savedItem = try await supabaseService.saveMediaItem(item)
-            print("✅ Media item saved to database")
+            
+            // Upload thumbnail if we have one (especially important for videos)
+            var thumbnailURL: String? = nil
+            if let thumbnail = item.thumbnail, let thumbnailData = thumbnail.jpegData(compressionQuality: 0.7) {
+                let thumbnailFileName = "\(item.id)_thumb.jpg"
+                thumbnailURL = try await supabaseService.uploadMedia(
+                    data: thumbnailData,
+                    fileName: thumbnailFileName,
+                    contentType: "image/jpeg"
+                )
+            }
             
             // Then upload the file if we have local data
             if let localURL = item.localURL {
-                print("☁️ Uploading media file to storage...")
                 // Load the file data
                 let data = try Data(contentsOf: localURL)
-                print("   - File size: \(data.count) bytes")
                 
                 // Determine content type
                 let contentType = item.type == .video ? "video/mp4" : "image/jpeg"
@@ -191,21 +192,16 @@ class CampaignViewModel: ObservableObject {
                     fileName: fileName,
                     contentType: contentType
                 )
-                print("✅ Media file uploaded to storage")
-                print("   - Cloud URL: \(cloudURL)")
                 
-                // Update media item with cloud URL
+                // Update media item with cloud URL and thumbnail URL
                 if let index = mediaItems.firstIndex(where: { $0.id == item.id }) {
                     savedItem.cloudURL = cloudURL
+                    savedItem.thumbnailURL = thumbnailURL
                     mediaItems[index] = savedItem
                     
-                    // Update in database with cloud URL
+                    // Update in database with cloud URL and thumbnail URL
                     _ = try await supabaseService.saveMediaItem(savedItem)
-                    print("✅ Media item updated with cloud URL")
                 }
-            } else {
-                print("⚠️ No localURL found - skipping file upload")
-                print("   - This media won't have a cloud URL")
             }
         } catch {
             print("❌ Failed to save/upload media: \(error.localizedDescription)")
