@@ -48,6 +48,9 @@
 		CEAE77262EAFCB7B00D1A777 /* InstagramConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */; };
 		CEAE77282EAFCBA000D1A777 /* InstagramService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77272EAFCBA000D1A777 /* InstagramService.swift */; };
 		CEAE772A2EAFCBBC00D1A777 /* InstagramAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */; };
+		A000001E /* PrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001E /* PrivacyView.swift */; };
+		A000001F /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001F /* HelpSupportView.swift */; };
+		A0000020 /* TermsOfServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000020 /* TermsOfServiceView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +91,9 @@
 		CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramConnection.swift; sourceTree = "<group>"; };
 		CEAE77272EAFCBA000D1A777 /* InstagramService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramService.swift; sourceTree = "<group>"; };
 		CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramAuthView.swift; sourceTree = "<group>"; };
+		B000001E /* PrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyView.swift; sourceTree = "<group>"; };
+		B000001F /* HelpSupportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
+		B0000020 /* TermsOfServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsOfServiceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,6 +239,9 @@
 			isa = PBXGroup;
 			children = (
 				B0000019 /* ProfileView.swift */,
+				B000001E /* PrivacyView.swift */,
+				B000001F /* HelpSupportView.swift */,
+				B0000020 /* TermsOfServiceView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -349,6 +358,9 @@
 				A0000017 /* GeneratedPostsView.swift in Sources */,
 				A0000018 /* ScheduleView.swift in Sources */,
 				A0000019 /* ProfileView.swift in Sources */,
+				A000001E /* PrivacyView.swift in Sources */,
+				A000001F /* HelpSupportView.swift in Sources */,
+				A0000020 /* TermsOfServiceView.swift in Sources */,
 				A000001A /* CustomTextField.swift in Sources */,
 				A000001B /* PostPreviewCard.swift in Sources */,
 				CE8897642EB806AF00FA1803 /* AIImageGenerationSection.swift in Sources */,

@@ -200,9 +200,18 @@ struct ProfileView: View {
                             
                             VStack(spacing: 1) {
                                 SettingsRow(icon: "bell.fill", title: "Notifications", action: {})
-                                SettingsRow(icon: "lock.fill", title: "Privacy", action: {})
-                                SettingsRow(icon: "questionmark.circle.fill", title: "Help & Support", action: {})
-                                SettingsRow(icon: "doc.text.fill", title: "Terms of Service", action: {})
+                                
+                                NavigationLink(destination: PrivacyView()) {
+                                    SettingsRowContent(icon: "lock.fill", title: "Privacy")
+                                }
+                                
+                                NavigationLink(destination: HelpSupportView()) {
+                                    SettingsRowContent(icon: "questionmark.circle.fill", title: "Help & Support")
+                                }
+                                
+                                NavigationLink(destination: TermsOfServiceView()) {
+                                    SettingsRowContent(icon: "doc.text.fill", title: "Terms of Service")
+                                }
                             }
                             .background(Color.marketingCardBackground)
                             .cornerRadius(12)
@@ -332,23 +341,32 @@ struct SettingsRow: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(.marketingPrimary)
-                    .frame(width: 32)
-                
-                Text(title)
-                    .foregroundColor(.white)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-                    .font(.caption)
-            }
-            .padding()
-            .background(Color.clear)
+            SettingsRowContent(icon: icon, title: title)
         }
+    }
+}
+
+struct SettingsRowContent: View {
+    let icon: String
+    let title: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(.marketingPrimary)
+                .frame(width: 32)
+            
+            Text(title)
+                .foregroundColor(.white)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+                .font(.caption)
+        }
+        .padding()
+        .background(Color.clear)
     }
 }
 
