@@ -1,14 +1,14 @@
 import SwiftUI
 
 extension Color {
-    // Corporate Green Theme - Growth, Prosperity, Success
-    static let marketingPrimary = Color(red: 0.024, green: 0.373, blue: 0.275) // Forest Green #065F46
-    static let marketingSecondary = Color(red: 0.051, green: 0.580, blue: 0.533) // Teal #0D9488
-    static let marketingAccent = Color(red: 0.063, green: 0.725, blue: 0.506) // Emerald #10B981
+    // Blue/Purple Gradient Theme
+    static let marketingPrimary = Color(red: 0.231, green: 0.506, blue: 0.965) // Blue #3B82F6
+    static let marketingSecondary = Color(red: 0.545, green: 0.361, blue: 0.965) // Purple #8B5CF6
+    static let marketingAccent = Color(red: 0.584, green: 0.345, blue: 0.953) // Bright Purple #9565F4
     static let marketingSuccess = Color(red: 0.396, green: 0.639, blue: 0.051) // Lime Green #65A30D
     static let marketingWarning = Color(red: 0.918, green: 0.345, blue: 0.047) // Orange #EA580C
     static let marketingError = Color(red: 0.863, green: 0.149, blue: 0.149) // Red #DC2626
-    static let marketingInfo = Color(red: 0.051, green: 0.580, blue: 0.533) // Teal #0D9488
+    static let marketingInfo = Color(red: 0.231, green: 0.506, blue: 0.965) // Blue #3B82F6
     
     // Background variations
     static let marketingBackground = Color.black

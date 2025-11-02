@@ -118,20 +118,6 @@ struct HomeView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: CreateCampaignView()) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title3)
-                            Text("New Post")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                        }
-                        .foregroundColor(.marketingPrimary)
-                    }
-                }
-            }
             .onAppear {
                 // Refresh data every time the view appears (except first time since init loads it)
                 if !isFirstAppear {

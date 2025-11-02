@@ -105,14 +105,18 @@ struct CreateCampaignView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if campaignViewModel.currentStep > 0 {
-                        Button(action: previousStep) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
-                            }
-                            .foregroundColor(.marketingPrimary)
+                    Button(action: {
+                        if campaignViewModel.currentStep > 0 {
+                            previousStep()
+                        } else {
+                            dismiss()
                         }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Back")
+                        }
+                        .foregroundColor(.marketingPrimary)
                     }
                 }
                 
