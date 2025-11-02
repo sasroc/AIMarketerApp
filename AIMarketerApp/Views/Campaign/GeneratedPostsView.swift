@@ -211,10 +211,9 @@ struct EditablePostCard: View {
                         ZStack {
                             Image(uiImage: thumbnail)
                                 .resizable()
-                                .scaledToFill()
+                                .scaledToFit()
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 200)
-                                .clipped()
                                 .cornerRadius(12)
                                 .allowsHitTesting(false)
                             
@@ -242,10 +241,9 @@ struct EditablePostCard: View {
                                 case .success(let image):
                                     image
                                         .resizable()
-                                        .scaledToFill()
+                                        .scaledToFit()
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 200)
-                                        .clipped()
                                         .cornerRadius(12)
                                         .allowsHitTesting(false)
                                 case .failure:
@@ -283,10 +281,9 @@ struct EditablePostCard: View {
                                         case .success(let image):
                                             image
                                                 .resizable()
-                                                .scaledToFill()
+                                                .scaledToFit()
                                                 .frame(maxWidth: .infinity)
                                                 .frame(height: 200)
-                                                .clipped()
                                                 .cornerRadius(12)
                                         case .failure:
                                             videoPlaceholder

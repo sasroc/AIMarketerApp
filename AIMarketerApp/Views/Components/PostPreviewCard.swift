@@ -66,10 +66,9 @@ struct PostPreviewCard: View {
                         ZStack {
                             Image(uiImage: thumbnail)
                                 .resizable()
-                                .scaledToFill()
-                                .frame(height: 200)
+                                .scaledToFit()
                                 .frame(maxWidth: .infinity)
-                                .clipped()
+                                .frame(height: 200)
                                 .cornerRadius(12)
                             
                             // Video indicator
@@ -91,10 +90,9 @@ struct PostPreviewCard: View {
                             case .success(let image):
                                 image
                                     .resizable()
-                                    .scaledToFill()
-                                    .frame(height: 200)
+                                    .scaledToFit()
                                     .frame(maxWidth: .infinity)
-                                    .clipped()
+                                    .frame(height: 200)
                                     .cornerRadius(12)
                             case .failure:
                                 VStack {
@@ -121,10 +119,9 @@ struct PostPreviewCard: View {
                                 case .success(let image):
                                     image
                                         .resizable()
-                                        .scaledToFill()
-                                        .frame(height: 200)
+                                        .scaledToFit()
                                         .frame(maxWidth: .infinity)
-                                        .clipped()
+                                        .frame(height: 200)
                                         .cornerRadius(12)
                                 case .failure:
                                     videoPlaceholder
