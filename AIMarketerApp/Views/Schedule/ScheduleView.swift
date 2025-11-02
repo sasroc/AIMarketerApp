@@ -77,7 +77,7 @@ struct ScheduleView: View {
                                     }
                                 } else {
                                     ForEach(filteredPosts) { post in
-                                        EditablePostCard(post: post)
+                                        SchedulePostCard(post: post)
                                             .padding(.horizontal)
                                     }
                                 }
@@ -250,6 +250,322 @@ struct DraftCard: View {
         }
         .padding()
         .background(Color.marketingCardBackground)
+        .cornerRadius(12)
+    }
+}
+
+struct SchedulePostCard: View {
+    let post: GeneratedPost
+    @EnvironmentObject var campaignViewModel: CampaignViewModel
+    @State private var isEditing = false
+    @State private var editedCaption: String
+    @FocusState private var isTextEditorFocused: Bool
+    @State private var showingDeleteConfirmation = false
+    @State private var isExpanded = false
+    
+    init(post: GeneratedPost) {
+        self.post = post
+        self._editedCaption = State(initialValue: post.caption)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Collapsed header - always visible
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.marketingPrimary)
+                    
+                    Text(formattedDate)
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .fontWeight(.medium)
+                    
+                    Spacer()
+                    
+                    // Chevron icon
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(PlainButtonStyle())
+            .padding()
+            
+            // Expanded content - shows when isExpanded is true
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 12) {
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
+                    
+                    // Caption content with edit functionality
+                    Group {
+                        if isEditing {
+                            SimpleTextEditor(text: $editedCaption)
+                                .frame(maxWidth: .infinity, minHeight: 120, maxHeight: 300)
+                                .focused($isTextEditorFocused)
+                        } else {
+                            Text(post.caption)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    
+                    // Error message if post failed
+                    if post.status == .failed, let errorMessage = post.errorMessage {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.marketingError)
+                            Text(errorMessage)
+                                .font(.caption)
+                                .foregroundColor(.marketingError)
+                        }
+                        .padding(12)
+                        .background(Color.marketingError.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    
+                    // Media preview
+                    if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
+                        Group {
+                            if let thumbnail = mediaItem.thumbnail {
+                                // Display local thumbnail if available (works for both images and videos)
+                                ZStack {
+                                    Image(uiImage: thumbnail)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 200)
+                                        .cornerRadius(12)
+                                        .allowsHitTesting(false)
+                                    
+                                    // Video indicator
+                                    if mediaItem.type == .video {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 50))
+                                            .foregroundColor(.white)
+                                            .shadow(radius: 5)
+                                    }
+                                }
+                            } else if let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
+                                // Display from cloud URL
+                                if mediaItem.type == .image {
+                                    // For images, use AsyncImage
+                                    ZStack {
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .empty:
+                                                ProgressView()
+                                                    .frame(maxWidth: .infinity)
+                                                    .frame(height: 200)
+                                                    .background(Color.gray.opacity(0.3))
+                                                    .cornerRadius(12)
+                                            case .success(let image):
+                                                image
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(maxWidth: .infinity)
+                                                    .frame(height: 200)
+                                                    .cornerRadius(12)
+                                                    .allowsHitTesting(false)
+                                            case .failure:
+                                                VStack {
+                                                    Image(systemName: "photo")
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(width: 50, height: 50)
+                                                        .foregroundColor(.gray)
+                                                    Text("Failed to load")
+                                                        .font(.caption)
+                                                        .foregroundColor(.gray)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 200)
+                                                .background(Color.gray.opacity(0.3))
+                                                .cornerRadius(12)
+                                            @unknown default:
+                                                EmptyView()
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // For videos, try to load thumbnail from thumbnailURL
+                                    if let thumbnailURL = mediaItem.thumbnailURL, let thumbUrl = URL(string: thumbnailURL) {
+                                        ZStack {
+                                            AsyncImage(url: thumbUrl) { phase in
+                                                switch phase {
+                                                case .empty:
+                                                    ProgressView()
+                                                        .frame(maxWidth: .infinity)
+                                                        .frame(height: 200)
+                                                        .background(Color.gray.opacity(0.3))
+                                                        .cornerRadius(12)
+                                                case .success(let image):
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(maxWidth: .infinity)
+                                                        .frame(height: 200)
+                                                        .cornerRadius(12)
+                                                case .failure:
+                                                    videoPlaceholder
+                                                @unknown default:
+                                                    EmptyView()
+                                                }
+                                            }
+                                            
+                                            // Play icon overlay
+                                            Image(systemName: "play.circle.fill")
+                                                .font(.system(size: 50))
+                                                .foregroundColor(.white)
+                                                .shadow(radius: 5)
+                                        }
+                                    } else {
+                                        // No thumbnail URL, show placeholder
+                                        videoPlaceholder
+                                    }
+                                }
+                            } else {
+                                // Fallback placeholder
+                                VStack {
+                                    Image(systemName: mediaItem.type == .video ? "video" : "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.gray)
+                                    Text(mediaItem.type == .video ? "Video (no preview)" : "No image")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                                .background(Color.gray.opacity(0.3))
+                                .cornerRadius(12)
+                            }
+                        }
+                    } else {
+                        // No media item found
+                        VStack {
+                            Image(systemName: "photo.slash")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.red)
+                            Text("Media not found")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 200)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(12)
+                    }
+                    
+                    // Edit and Delete buttons
+                    HStack(spacing: 12) {
+                        // Edit button
+                        Button(action: {
+                            toggleEdit()
+                        }) {
+                            HStack {
+                                Image(systemName: isEditing ? "checkmark" : "pencil")
+                                Text(isEditing ? "Done" : "Edit")
+                            }
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.marketingPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.marketingPrimary.opacity(0.15))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        // Delete button
+                        Button(action: {
+                            showingDeleteConfirmation = true
+                        }) {
+                            HStack {
+                                Image(systemName: "trash")
+                                Text("Delete")
+                            }
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.marketingError)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.marketingError.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+            }
+        }
+        .background(Color.marketingCardBackground)
+        .cornerRadius(16)
+        .alert("Delete Post", isPresented: $showingDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                withAnimation {
+                    campaignViewModel.deletePost(post)
+                }
+            }
+        } message: {
+            Text("Are you sure you'd like to delete this post?")
+        }
+    }
+    
+    private func toggleEdit() {
+        if isEditing {
+            // Save changes and exit edit mode
+            campaignViewModel.updatePostCaption(postId: post.id, newCaption: editedCaption)
+            isTextEditorFocused = false
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isEditing = false
+            }
+        } else {
+            // Enter edit mode
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isEditing = true
+            }
+            
+            // Focus the text editor after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                isTextEditorFocused = true
+            }
+        }
+    }
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
+        return formatter.string(from: post.scheduledDate)
+    }
+    
+    private var videoPlaceholder: some View {
+        ZStack {
+            Color.gray.opacity(0.3)
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.white)
+                .shadow(radius: 5)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 200)
         .cornerRadius(12)
     }
 }

@@ -4,157 +4,192 @@ struct PostPreviewCard: View {
     let post: GeneratedPost
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var showingDeleteConfirmation = false
+    @State private var isExpanded = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                // Status badge
-                HStack(spacing: 6) {
-                    Image(systemName: post.status.icon)
-                        .font(.caption)
-                    Text(post.status.displayName)
-                        .font(.caption)
+        VStack(alignment: .leading, spacing: 0) {
+            // Collapsed header - always visible
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    // Status badge
+                    HStack(spacing: 6) {
+                        Image(systemName: post.status.icon)
+                            .font(.caption)
+                        Text(post.status.displayName)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(statusColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(statusColor.opacity(0.2))
+                    .cornerRadius(8)
+                    
+                    Spacer()
+                    
+                    // Scheduled date and time
+                    Text(formattedDate)
+                        .font(.subheadline)
+                        .foregroundColor(.white)
                         .fontWeight(.medium)
-                }
-                .foregroundColor(statusColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(statusColor.opacity(0.2))
-                .cornerRadius(8)
-                
-                Spacer()
-                
-                // Scheduled date
-                Text(formattedDate)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                // Delete button
-                Button(action: { showingDeleteConfirmation = true }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.marketingError.opacity(0.8))
-                        .font(.system(size: 16))
-                }
-                .padding(.leading, 8)
-            }
-            
-            // Caption
-            Text(post.caption)
-                .font(.body)
-                .foregroundColor(.white)
-                .lineLimit(3)
-            
-            // Error message if post failed
-            if post.status == .failed, let errorMessage = post.errorMessage {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.marketingError)
-                    Text(errorMessage)
+                    
+                    // Chevron icon
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.caption)
-                        .foregroundColor(.marketingError)
+                        .foregroundColor(.gray)
+                        .padding(.leading, 8)
                 }
-                .padding(12)
-                .background(Color.marketingError.opacity(0.1))
-                .cornerRadius(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(PlainButtonStyle())
+            .padding()
             
-            // Media preview
-            if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
-                Group {
-                    if let thumbnail = mediaItem.thumbnail {
-                        // Display local thumbnail if available (works for both images and videos)
-                        ZStack {
-                            Image(uiImage: thumbnail)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 200)
-                                .cornerRadius(12)
-                            
-                            // Video indicator
-                            if mediaItem.type == .video {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.white)
-                                    .shadow(radius: 5)
-                            }
+            // Expanded content - shows when isExpanded is true
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 12) {
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
+                    
+                    // Caption
+                    Text(post.caption)
+                        .font(.body)
+                        .foregroundColor(.white)
+                        .lineLimit(nil)
+                    
+                    // Error message if post failed
+                    if post.status == .failed, let errorMessage = post.errorMessage {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.marketingError)
+                            Text(errorMessage)
+                                .font(.caption)
+                                .foregroundColor(.marketingError)
                         }
-                    } else if mediaItem.type == .image, let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
-                        // For images, display from cloud URL
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
-                                ProgressView()
-                                    .frame(height: 200)
-                                    .frame(maxWidth: .infinity)
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 200)
-                                    .cornerRadius(12)
-                            case .failure:
-                                VStack {
-                                    Image(systemName: "photo")
-                                    Text("Failed to load")
-                                }
-                                .frame(height: 200)
-                                .frame(maxWidth: .infinity)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(12)
-                            @unknown default:
-                                EmptyView()
-                            }
-                        }
-                    } else if mediaItem.type == .video, let thumbnailURL = mediaItem.thumbnailURL, let url = URL(string: thumbnailURL) {
-                        // For videos, display thumbnail from thumbnailURL
-                        ZStack {
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                        .frame(height: 200)
-                                        .frame(maxWidth: .infinity)
-                                case .success(let image):
-                                    image
+                        .padding(12)
+                        .background(Color.marketingError.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    
+                    // Media preview
+                    if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
+                        Group {
+                            if let thumbnail = mediaItem.thumbnail {
+                                // Display local thumbnail if available (works for both images and videos)
+                                ZStack {
+                                    Image(uiImage: thumbnail)
                                         .resizable()
                                         .scaledToFit()
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 200)
                                         .cornerRadius(12)
-                                case .failure:
+                                    
+                                    // Video indicator
+                                    if mediaItem.type == .video {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 40))
+                                            .foregroundColor(.white)
+                                            .shadow(radius: 5)
+                                    }
+                                }
+                            } else if mediaItem.type == .image, let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
+                                // For images, display from cloud URL
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+                                            .frame(height: 200)
+                                            .frame(maxWidth: .infinity)
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: 200)
+                                            .cornerRadius(12)
+                                    case .failure:
+                                        VStack {
+                                            Image(systemName: "photo")
+                                            Text("Failed to load")
+                                        }
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(12)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
+                                }
+                            } else if mediaItem.type == .video, let thumbnailURL = mediaItem.thumbnailURL, let url = URL(string: thumbnailURL) {
+                                // For videos, display thumbnail from thumbnailURL
+                                ZStack {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            ProgressView()
+                                                .frame(height: 200)
+                                                .frame(maxWidth: .infinity)
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 200)
+                                                .cornerRadius(12)
+                                        case .failure:
+                                            videoPlaceholder
+                                        @unknown default:
+                                            EmptyView()
+                                        }
+                                    }
+                                    
+                                    // Play icon overlay
+                                    Image(systemName: "play.circle.fill")
+                                        .font(.system(size: 40))
+                                        .foregroundColor(.white)
+                                        .shadow(radius: 5)
+                                }
+                            } else {
+                                // Fallback placeholder
+                                if mediaItem.type == .video {
                                     videoPlaceholder
-                                @unknown default:
-                                    EmptyView()
+                                } else {
+                                    VStack {
+                                        Image(systemName: "photo")
+                                        Text("No image")
+                                    }
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(12)
                                 }
                             }
-                            
-                            // Play icon overlay
-                            Image(systemName: "play.circle.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.white)
-                                .shadow(radius: 5)
-                        }
-                    } else {
-                        // Fallback placeholder
-                        if mediaItem.type == .video {
-                            videoPlaceholder
-                        } else {
-                            VStack {
-                                Image(systemName: "photo")
-                                Text("No image")
-                            }
-                            .frame(height: 200)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(12)
                         }
                     }
+                    
+                    // Delete button
+                    Button(action: { showingDeleteConfirmation = true }) {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text("Delete Post")
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.marketingError)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.marketingError.opacity(0.1))
+                        .cornerRadius(8)
+                    }
                 }
+                .padding(.horizontal)
+                .padding(.bottom)
             }
         }
-        .padding()
         .background(Color.marketingCardBackground)
         .cornerRadius(16)
         .alert("Delete Post", isPresented: $showingDeleteConfirmation) {
