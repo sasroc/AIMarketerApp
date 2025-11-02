@@ -21,7 +21,10 @@ struct CreateCampaignView: View {
                         Group {
                             switch campaignViewModel.currentStep {
                             case 0:
-                                MediaUploadSection()
+                                VStack(spacing: 24) {
+                                    AIImageGenerationSection()
+                                    MediaUploadSection()
+                                }
                             case 1:
                                 MarketingPlanSection()
                             case 2:
@@ -29,7 +32,10 @@ struct CreateCampaignView: View {
                             case 3:
                                 ContentGuidelinesSection()
                             default:
-                                MediaUploadSection()
+                                VStack(spacing: 24) {
+                                    AIImageGenerationSection()
+                                    MediaUploadSection()
+                                }
                             }
                         }
                         .padding(.horizontal)

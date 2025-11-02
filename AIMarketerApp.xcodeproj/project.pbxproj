@@ -43,6 +43,8 @@
 		CE409FCA2EA9341D006A2BF2 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FC92EA9341D006A2BF2 /* Realtime */; };
 		CE409FCC2EA9341D006A2BF2 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FCB2EA9341D006A2BF2 /* Storage */; };
 		CE409FCE2EA9341D006A2BF2 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = CE409FCD2EA9341D006A2BF2 /* Supabase */; };
+		CE8897622EB8069300FA1803 /* AIImageGenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8897612EB8069300FA1803 /* AIImageGenerationService.swift */; };
+		CE8897642EB806AF00FA1803 /* AIImageGenerationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8897632EB806AF00FA1803 /* AIImageGenerationSection.swift */; };
 		CEAE77262EAFCB7B00D1A777 /* InstagramConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */; };
 		CEAE77282EAFCBA000D1A777 /* InstagramService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77272EAFCBA000D1A777 /* InstagramService.swift */; };
 		CEAE772A2EAFCBBC00D1A777 /* InstagramAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */; };
@@ -81,6 +83,8 @@
 		B000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B000001D /* DraftCampaign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCampaign.swift; sourceTree = "<group>"; };
 		C0000001 /* AIMarketerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIMarketerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE8897612EB8069300FA1803 /* AIImageGenerationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIImageGenerationService.swift; sourceTree = "<group>"; };
+		CE8897632EB806AF00FA1803 /* AIImageGenerationSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIImageGenerationSection.swift; sourceTree = "<group>"; };
 		CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramConnection.swift; sourceTree = "<group>"; };
 		CEAE77272EAFCBA000D1A777 /* InstagramService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramService.swift; sourceTree = "<group>"; };
 		CEAE77292EAFCBBC00D1A777 /* InstagramAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramAuthView.swift; sourceTree = "<group>"; };
@@ -179,6 +183,7 @@
 				B000000A /* ContentGenerationService.swift */,
 				B000000A1 /* SupabaseService.swift */,
 				CEAE77272EAFCBA000D1A777 /* InstagramService.swift */,
+				CE8897612EB8069300FA1803 /* AIImageGenerationService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -211,6 +216,7 @@
 				B0000015 /* SchedulingSection.swift */,
 				B0000016 /* ContentGuidelinesSection.swift */,
 				B0000017 /* GeneratedPostsView.swift */,
+				CE8897632EB806AF00FA1803 /* AIImageGenerationSection.swift */,
 			);
 			path = Campaign;
 			sourceTree = "<group>";
@@ -316,6 +322,7 @@
 				A0000001 /* AIMarketerApp.swift in Sources */,
 				A0000002 /* RootView.swift in Sources */,
 				A0000004 /* User.swift in Sources */,
+				CE8897622EB8069300FA1803 /* AIImageGenerationService.swift in Sources */,
 				A0000005 /* MediaItem.swift in Sources */,
 				A0000006 /* MarketingPlan.swift in Sources */,
 				A0000007 /* PostSchedule.swift in Sources */,
@@ -344,6 +351,7 @@
 				A0000019 /* ProfileView.swift in Sources */,
 				A000001A /* CustomTextField.swift in Sources */,
 				A000001B /* PostPreviewCard.swift in Sources */,
+				CE8897642EB806AF00FA1803 /* AIImageGenerationSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

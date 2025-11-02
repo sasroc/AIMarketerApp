@@ -5,6 +5,7 @@ An AI-powered marketing app that helps you create and schedule social media cont
 ## Features
 
 - 🎨 **Beautiful SwiftUI Interface** - Modern, intuitive design with dark mode support
+- 🖼️ **AI Image Generation** - Generate new images or edit existing ones using DALL-E (OpenAI)
 - 📸 **Media Upload** - Select up to 10 images or videos from your photo library
 - 📝 **Marketing Plan** - Define your campaign goals, target audience, and content tone
 - 📅 **Smart Scheduling** - Schedule posts with custom date ranges, multiple posting days, and flexible times
@@ -29,9 +30,13 @@ An AI-powered marketing app that helps you create and schedule social media cont
 2. Set up Supabase (see [SUPABASE_SETUP.md](SUPABASE_SETUP.md))
 3. Configure your API keys in `Config.plist` (copy from `Config.template.plist`)
 4. Apply database migrations: `./apply-migrations.sh`
-5. Open `AIMarketerApp.xcodeproj` in Xcode
-6. Select your target device or simulator
-7. Press `Cmd + R` to build and run
+5. Deploy Edge Functions:
+   - `./setup-ai.sh` (for caption generation)
+   - `./deploy-image-function.sh` (for image generation)
+6. Open `AIMarketerApp.xcodeproj` in Xcode
+7. Add new files to Xcode project (see [AI_IMAGE_GENERATION_SETUP.md](AI_IMAGE_GENERATION_SETUP.md))
+8. Select your target device or simulator
+9. Press `Cmd + R` to build and run
 
 For detailed setup instructions, see [QUICKSTART.md](QUICKSTART.md).
 
@@ -66,7 +71,10 @@ AIMarketerApp/
 ### Creating Your First Campaign
 
 1. **Sign Up/Sign In** - Create an account or sign in to get started
-2. **Upload Media** - Select images or videos from your photo library
+2. **Generate or Upload Media**:
+   - Use AI to generate images from text descriptions
+   - Or edit existing images with AI
+   - Or upload images/videos from your photo library
 3. **Define Marketing Plan** - Describe your campaign, target audience, and choose a content tone
 4. **Set Schedule** - Choose custom date ranges, select posting days, and set multiple times per day
 5. **Add Guidelines** - Specify what the AI should include in your posts
@@ -94,24 +102,30 @@ For more details, see [DATA_PERSISTENCE.md](DATA_PERSISTENCE.md).
 
 The app integrates with:
 - **Supabase** - Authentication, database, and file storage
-- **AI Content Generation** - Custom edge function for generating captions (see `supabase/functions/generate-captions`)
+- **OpenAI API** - For AI-powered content and image generation
+  - DALL-E 3 for image generation (see `supabase/functions/generate-image`)
+  - GPT-4 for caption generation (see `supabase/functions/generate-captions`)
 
 To customize or extend:
 1. Update `SupabaseService.swift` for database operations
-2. Modify `supabase/functions/generate-captions/index.ts` for AI generation logic
-3. Add Instagram API integration for posting (future enhancement)
+2. Modify `supabase/functions/generate-captions/index.ts` for caption generation logic
+3. Modify `supabase/functions/generate-image/index.ts` for image generation logic
+4. Update `AIImageGenerationService.swift` for client-side image generation features
+5. Add Instagram API integration for posting (future enhancement)
 
 ## Next Steps
 
 - [x] Integrate with Supabase backend
 - [x] Implement data persistence and sync
 - [x] Connect AI for content generation
+- [x] Add AI image generation and editing
 - [ ] Implement Instagram Graph API integration for automatic posting
 - [ ] Add push notifications for post status updates
 - [ ] Implement analytics and insights dashboard
 - [ ] Add support for more social media platforms (Facebook, Twitter, LinkedIn)
 - [ ] Offline mode with local caching
 - [ ] Advanced scheduling with time zone support
+- [ ] Image variation generation and style presets
 
 ## Design Highlights
 
