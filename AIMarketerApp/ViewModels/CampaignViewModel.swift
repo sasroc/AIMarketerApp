@@ -20,6 +20,8 @@ class CampaignViewModel: ObservableObject {
     private let contentService = ContentGenerationService.shared
     private let supabaseService = SupabaseService.shared
     private var refreshTimer: Timer?
+    private let notificationManager = NotificationManager.shared
+    private let statusTracker = PostStatusTracker.shared
     
     let maxMediaItems = 10
     
@@ -27,8 +29,9 @@ class CampaignViewModel: ObservableObject {
     
     init() {
         // Load data when view model is created
-        Task {
+        Task { @MainActor in
             await loadUserData()
+            startAutoRefresh()
         }
     }
     
@@ -56,6 +59,7 @@ class CampaignViewModel: ObservableObject {
             let mediaItemIds = Set(generatedPosts.map { $0.mediaItemId.lowercased() })
             mediaItems = allMedia.filter { mediaItemIds.contains($0.id.lowercased()) }
             print("✅ Loaded \(mediaItems.count) media items for current posts")
+            _ = await statusTracker.process(posts: generatedPosts)
         } catch {
             print("❌ Failed to load data: \(error.localizedDescription)")
             errorMessage = "Failed to load data: \(error.localizedDescription)"
@@ -68,37 +72,12 @@ class CampaignViewModel: ObservableObject {
     func refreshPostStatuses() async {
         do {
             let updatedPosts = try await supabaseService.fetchGeneratedPosts()
-            
-            // Update only posts that have changed status
-            var hasChanges = false
-            for updatedPost in updatedPosts {
-                // Compare UUIDs case-insensitively to avoid duplicates
-                if let index = generatedPosts.firstIndex(where: { 
-                    $0.id.lowercased() == updatedPost.id.lowercased() 
-                }) {
-                    let oldPost = generatedPosts[index]
-                    if oldPost.status != updatedPost.status || 
-                       oldPost.instagramPostId != updatedPost.instagramPostId ||
-                       oldPost.instagramPermalink != updatedPost.instagramPermalink {
-                        print("📊 Post status: \(oldPost.status.rawValue) → \(updatedPost.status.rawValue)")
-                        generatedPosts[index] = updatedPost
-                        hasChanges = true
-                    }
-                } else {
-                    // New post not in local array
-                    generatedPosts.append(updatedPost)
-                    hasChanges = true
-                }
-            }
-            
-            if hasChanges {
-                // Force UI update by explicitly setting the property
-                await MainActor.run {
-                    self.objectWillChange.send()
-                }
-            }
-            
+            let changes = await statusTracker.process(posts: updatedPosts)
+            generatedPosts = updatedPosts
             lastRefreshTime = Date()
+            for change in changes {
+                notificationManager.sendPostStatusNotification(for: change.post, previousStatus: change.previousStatus)
+            }
         } catch {
             print("❌ Failed to refresh posts: \(error.localizedDescription)")
         }

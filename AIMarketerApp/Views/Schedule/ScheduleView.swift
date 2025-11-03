@@ -93,18 +93,8 @@ struct ScheduleView: View {
             }
             .navigationTitle("Schedule")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                // Start auto-refresh when view appears
-                campaignViewModel.startAutoRefresh()
-                
-                // Do an immediate refresh
-                Task {
-                    await campaignViewModel.refreshPostStatuses()
-                }
-            }
-            .onDisappear {
-                // Stop auto-refresh when view disappears to save resources
-                campaignViewModel.stopAutoRefresh()
+            .task {
+                await campaignViewModel.refreshPostStatuses()
             }
         }
     }

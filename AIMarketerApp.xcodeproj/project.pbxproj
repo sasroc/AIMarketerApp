@@ -51,6 +51,10 @@
 		A000001E /* PrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001E /* PrivacyView.swift */; };
 		A000001F /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001F /* HelpSupportView.swift */; };
 		A0000020 /* TermsOfServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000020 /* TermsOfServiceView.swift */; };
+		A0000021 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000021 /* NotificationManager.swift */; };
+		A0000022 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000022 /* AppDelegate.swift */; };
+		A0000023 /* PostStatusTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000023 /* PostStatusTracker.swift */; };
+		A0000024 /* PostStatusBackgroundFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000024 /* PostStatusBackgroundFetcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -94,6 +98,10 @@
 		B000001E /* PrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyView.swift; sourceTree = "<group>"; };
 		B000001F /* HelpSupportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
 		B0000020 /* TermsOfServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsOfServiceView.swift; sourceTree = "<group>"; };
+		B0000021 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		B0000022 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B0000023 /* PostStatusTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostStatusTracker.swift; sourceTree = "<group>"; };
+		B0000024 /* PostStatusBackgroundFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostStatusBackgroundFetcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +133,7 @@
 			isa = PBXGroup;
 			children = (
 				B0000001 /* AIMarketerApp.swift */,
+				B0000022 /* AppDelegate.swift */,
 				B000001C /* Info.plist */,
 				B0000003 /* Assets.xcassets */,
 				B000000A3 /* Config.plist */,
@@ -190,6 +199,9 @@
 				B000000A1 /* SupabaseService.swift */,
 				CEAE77272EAFCBA000D1A777 /* InstagramService.swift */,
 				CE8897612EB8069300FA1803 /* AIImageGenerationService.swift */,
+				B0000021 /* NotificationManager.swift */,
+				B0000023 /* PostStatusTracker.swift */,
+				B0000024 /* PostStatusBackgroundFetcher.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -364,6 +376,10 @@
 				A000001A /* CustomTextField.swift in Sources */,
 				A000001B /* PostPreviewCard.swift in Sources */,
 				CE8897642EB806AF00FA1803 /* AIImageGenerationSection.swift in Sources */,
+				A0000021 /* NotificationManager.swift in Sources */,
+				A0000022 /* AppDelegate.swift in Sources */,
+				A0000023 /* PostStatusTracker.swift in Sources */,
+				A0000024 /* PostStatusBackgroundFetcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

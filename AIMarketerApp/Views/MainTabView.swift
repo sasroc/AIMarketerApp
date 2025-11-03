@@ -3,6 +3,7 @@ import SwiftUI
 struct MainTabView: View {
     @StateObject private var campaignViewModel = CampaignViewModel()
     @State private var showingCreateCampaign = false
+    @State private var hasRequestedNotifications = false
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -52,11 +53,25 @@ struct MainTabView: View {
             CreateCampaignView()
                 .environmentObject(campaignViewModel)
         }
+        .task {
+            requestNotificationAuthorization()
+        }
     }
 }
 
 #Preview {
     MainTabView()
         .environmentObject(AuthenticationViewModel())
+}
+
+private extension MainTabView {
+    func requestNotificationAuthorization() {
+        guard !hasRequestedNotifications else { return }
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            return
+        }
+        hasRequestedNotifications = true
+        NotificationManager.shared.requestAuthorizationIfNeeded()
+    }
 }
 

@@ -19,6 +19,7 @@ extension Color {
 
 @main
 struct AIMarketerApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var authViewModel = AuthenticationViewModel()
     
     var body: some Scene {
