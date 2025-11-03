@@ -111,7 +111,17 @@ class SupabaseService {
                     guard aiPostIndex < aiPosts.count else { break }
                     
                     let aiPost = aiPosts[aiPostIndex]
-                    _ = mediaItems[aiPostIndex % mediaItems.count]
+                    
+                    // Collect media items for this post based on imagesPerPost setting
+                    let imagesPerPost = schedule.imagesPerPost
+                    var mediaItemIds: [String] = []
+                    var mediaIndex = aiPostIndex
+                    
+                    for _ in 0..<imagesPerPost {
+                        let mediaItem = mediaItems[mediaIndex % mediaItems.count]
+                        mediaItemIds.append(mediaItem.id)
+                        mediaIndex += 1
+                    }
                     
                     // Set the scheduled time
                     var scheduledDate = currentDate
@@ -133,7 +143,7 @@ class SupabaseService {
                     posts.append(GeneratedPost(
                         id: aiPost.id,
                         caption: aiPost.caption,
-                        mediaItemId: aiPost.mediaItemId,
+                        mediaItemIds: mediaItemIds,
                         scheduledDate: scheduledDate,
                         status: .pending
                     ))
@@ -421,12 +431,16 @@ extension SupabaseService {
     
     func saveGeneratedPost(_ post: GeneratedPost, campaignId: String?) async throws -> GeneratedPost {
         let userId = try await getCurrentUserId()
+        let postUUID = UUID(uuidString: post.id) ?? UUID()
+        
+        // Use first media item for backward compatibility with media_item_id field
+        let firstMediaId = post.mediaItemIds.first.flatMap { UUID(uuidString: $0) }
         
         let dbPost = DatabaseGeneratedPost(
-            id: UUID(uuidString: post.id) ?? UUID(),
+            id: postUUID,
             user_id: userId,
             campaign_id: campaignId != nil ? UUID(uuidString: campaignId!) : nil,
-            media_item_id: UUID(uuidString: post.mediaItemId),
+            media_item_id: firstMediaId,
             caption: post.caption,
             scheduled_date: post.scheduledDate,
             status: post.status.rawValue,
@@ -439,6 +453,7 @@ extension SupabaseService {
         )
         
         do {
+            // Save the post
             let response: DatabaseGeneratedPost = try await supabase
                 .from("generated_posts")
                 .upsert(dbPost)
@@ -447,10 +462,13 @@ extension SupabaseService {
                 .execute()
                 .value
             
+            // Save post-media associations
+            try await savePostMediaItems(postId: postUUID, mediaItemIds: post.mediaItemIds)
+            
             return GeneratedPost(
                 id: response.id.uuidString,
                 caption: response.caption,
-                mediaItemId: response.media_item_id?.uuidString ?? post.mediaItemId,
+                mediaItemIds: post.mediaItemIds,
                 scheduledDate: response.scheduled_date,
                 status: PostStatus(rawValue: response.status) ?? .pending,
                 createdAt: response.created_at,
@@ -462,6 +480,31 @@ extension SupabaseService {
         } catch {
             print("❌ Failed to save post: \(error.localizedDescription)")
             throw error
+        }
+    }
+    
+    private func savePostMediaItems(postId: UUID, mediaItemIds: [String]) async throws {
+        // First delete existing associations
+        try await supabase
+            .from("post_media_items")
+            .delete()
+            .eq("post_id", value: postId.uuidString)
+            .execute()
+        
+        // Insert new associations
+        for (index, mediaId) in mediaItemIds.enumerated() {
+            guard let mediaUUID = UUID(uuidString: mediaId) else { continue }
+            
+            let association = PostMediaItemAssociation(
+                post_id: postId,
+                media_item_id: mediaUUID,
+                position: index
+            )
+            
+            try await supabase.database
+                .from("post_media_items")
+                .insert(association)
+                .execute()
         }
     }
     
@@ -488,11 +531,20 @@ extension SupabaseService {
             .execute()
             .value
         
-        return response.map { dbPost in
-            GeneratedPost(
+        // Fetch media items for each post
+        var posts: [GeneratedPost] = []
+        for dbPost in response {
+            let mediaItemIds = try await fetchPostMediaItemIds(postId: dbPost.id)
+            
+            // If no media items in junction table, fall back to legacy media_item_id
+            let finalMediaIds = mediaItemIds.isEmpty && dbPost.media_item_id != nil
+                ? [dbPost.media_item_id!.uuidString]
+                : mediaItemIds
+            
+            posts.append(GeneratedPost(
                 id: dbPost.id.uuidString,
                 caption: dbPost.caption,
-                mediaItemId: dbPost.media_item_id?.uuidString ?? "",
+                mediaItemIds: finalMediaIds,
                 scheduledDate: dbPost.scheduled_date,
                 status: PostStatus(rawValue: dbPost.status) ?? .pending,
                 createdAt: dbPost.created_at,
@@ -500,8 +552,22 @@ extension SupabaseService {
                 instagramPermalink: dbPost.instagram_permalink,
                 publishedAt: dbPost.published_at,
                 errorMessage: dbPost.error_message
-            )
+            ))
         }
+        
+        return posts
+    }
+    
+    private func fetchPostMediaItemIds(postId: UUID) async throws -> [String] {
+        let associations: [PostMediaItemAssociation] = try await supabase
+            .from("post_media_items")
+            .select()
+            .eq("post_id", value: postId.uuidString)
+            .order("position", ascending: true)
+            .execute()
+            .value
+        
+        return associations.map { $0.media_item_id.uuidString }
     }
     
     func updatePostStatus(_ postId: String, status: PostStatus) async throws {
@@ -706,7 +772,7 @@ struct DatabaseGeneratedPost: Codable {
     let id: UUID
     let user_id: UUID
     let campaign_id: UUID?
-    let media_item_id: UUID?
+    let media_item_id: UUID?  // Kept for backward compatibility
     let caption: String
     let scheduled_date: Date
     let status: String
@@ -716,6 +782,12 @@ struct DatabaseGeneratedPost: Codable {
     let instagram_permalink: String?
     let published_at: Date?
     let error_message: String?
+}
+
+struct PostMediaItemAssociation: Codable {
+    let post_id: UUID
+    let media_item_id: UUID
+    let position: Int
 }
 
 struct DatabaseInstagramConnection: Codable {

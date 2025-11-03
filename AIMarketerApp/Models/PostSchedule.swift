@@ -7,14 +7,16 @@ struct PostSchedule: Codable {
     var postTimes: [WeekDay: [Date]]
     var postsPerDay: [WeekDay: Int]
     var contentGuidelines: String
+    var imagesPerPost: Int  // Number of images to include in each post (1-10 for Instagram carousel support)
     
-    init(startDate: Date? = nil, endDate: Date? = nil, selectedDays: Set<WeekDay> = [], postTimes: [WeekDay: [Date]] = [:], postsPerDay: [WeekDay: Int] = [:], contentGuidelines: String = "") {
+    init(startDate: Date? = nil, endDate: Date? = nil, selectedDays: Set<WeekDay> = [], postTimes: [WeekDay: [Date]] = [:], postsPerDay: [WeekDay: Int] = [:], contentGuidelines: String = "", imagesPerPost: Int = 1) {
         self.startDate = startDate
         self.endDate = endDate
         self.selectedDays = selectedDays
         self.postTimes = postTimes
         self.postsPerDay = postsPerDay
         self.contentGuidelines = contentGuidelines
+        self.imagesPerPost = min(max(1, imagesPerPost), 10)  // Clamp between 1-10
     }
 }
 

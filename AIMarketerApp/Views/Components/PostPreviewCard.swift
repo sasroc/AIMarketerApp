@@ -5,6 +5,7 @@ struct PostPreviewCard: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var showingDeleteConfirmation = false
     @State private var isExpanded = false
+    @State private var currentMediaIndex = 0
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -75,97 +76,28 @@ struct PostPreviewCard: View {
                         .cornerRadius(8)
                     }
                     
-                    // Media preview
-                    if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
-                        Group {
-                            if let thumbnail = mediaItem.thumbnail {
-                                // Display local thumbnail if available (works for both images and videos)
-                                ZStack {
-                                    Image(uiImage: thumbnail)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 200)
-                                        .cornerRadius(12)
-                                    
-                                    // Video indicator
-                                    if mediaItem.type == .video {
-                                        Image(systemName: "play.circle.fill")
-                                            .font(.system(size: 40))
-                                            .foregroundColor(.white)
-                                            .shadow(radius: 5)
+                    // Media preview (supports carousel for multiple images)
+                    let mediaItems = post.mediaItemIds.compactMap { id in
+                        campaignViewModel.mediaItems.first(where: { $0.id == id })
+                    }
+                    
+                    if !mediaItems.isEmpty {
+                        VStack(spacing: 8) {
+                            // Media display
+                            MediaCarouselView(
+                                mediaItems: mediaItems,
+                                currentIndex: $currentMediaIndex
+                            )
+                            .frame(height: 200)
+                            
+                            // Carousel indicator (if multiple images)
+                            if mediaItems.count > 1 {
+                                HStack(spacing: 6) {
+                                    ForEach(0..<mediaItems.count, id: \.self) { index in
+                                        Circle()
+                                            .fill(currentMediaIndex == index ? Color.marketingPrimary : Color.gray.opacity(0.5))
+                                            .frame(width: 6, height: 6)
                                     }
-                                }
-                            } else if mediaItem.type == .image, let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
-                                // For images, display from cloud URL
-                                AsyncImage(url: url) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        ProgressView()
-                                            .frame(height: 200)
-                                            .frame(maxWidth: .infinity)
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(maxWidth: .infinity)
-                                            .frame(height: 200)
-                                            .cornerRadius(12)
-                                    case .failure:
-                                        VStack {
-                                            Image(systemName: "photo")
-                                            Text("Failed to load")
-                                        }
-                                        .frame(height: 200)
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color.gray.opacity(0.2))
-                                        .cornerRadius(12)
-                                    @unknown default:
-                                        EmptyView()
-                                    }
-                                }
-                            } else if mediaItem.type == .video, let thumbnailURL = mediaItem.thumbnailURL, let url = URL(string: thumbnailURL) {
-                                // For videos, display thumbnail from thumbnailURL
-                                ZStack {
-                                    AsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            ProgressView()
-                                                .frame(height: 200)
-                                                .frame(maxWidth: .infinity)
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(maxWidth: .infinity)
-                                                .frame(height: 200)
-                                                .cornerRadius(12)
-                                        case .failure:
-                                            videoPlaceholder
-                                        @unknown default:
-                                            EmptyView()
-                                        }
-                                    }
-                                    
-                                    // Play icon overlay
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.system(size: 40))
-                                        .foregroundColor(.white)
-                                        .shadow(radius: 5)
-                                }
-                            } else {
-                                // Fallback placeholder
-                                if mediaItem.type == .video {
-                                    videoPlaceholder
-                                } else {
-                                    VStack {
-                                        Image(systemName: "photo")
-                                        Text("No image")
-                                    }
-                                    .frame(height: 200)
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(12)
                                 }
                             }
                         }
@@ -230,6 +162,118 @@ struct PostPreviewCard: View {
                 .shadow(radius: 5)
         }
         .frame(height: 200)
+        .frame(maxWidth: .infinity)
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Media Carousel View
+struct MediaCarouselView: View {
+    let mediaItems: [MediaItem]
+    @Binding var currentIndex: Int
+    
+    var body: some View {
+        TabView(selection: $currentIndex) {
+            ForEach(0..<mediaItems.count, id: \.self) { index in
+                let mediaItem = mediaItems[index]
+                
+                Group {
+                    if let thumbnail = mediaItem.thumbnail {
+                        // Display local thumbnail if available
+                        ZStack {
+                            Image(uiImage: thumbnail)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .cornerRadius(12)
+                            
+                            // Video indicator
+                            if mediaItem.type == .video {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.white)
+                                    .shadow(radius: 5)
+                            }
+                        }
+                    } else if mediaItem.type == .image, let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
+                        // For images, display from cloud URL
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: .infinity)
+                                    .cornerRadius(12)
+                            case .failure:
+                                VStack {
+                                    Image(systemName: "photo")
+                                    Text("Failed to load")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(12)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    } else if mediaItem.type == .video, let thumbnailURL = mediaItem.thumbnailURL, let url = URL(string: thumbnailURL) {
+                        // For videos, display thumbnail from thumbnailURL
+                        ZStack {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxWidth: .infinity)
+                                        .cornerRadius(12)
+                                case .failure:
+                                    videoPlaceholder
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                            
+                            // Play icon overlay
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.white)
+                                .shadow(radius: 5)
+                        }
+                    } else {
+                        // Fallback placeholder
+                        if mediaItem.type == .video {
+                            videoPlaceholder
+                        } else {
+                            VStack {
+                                Image(systemName: "photo")
+                                Text("No image")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(12)
+                        }
+                    }
+                }
+                .tag(index)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+    }
+    
+    private var videoPlaceholder: some View {
+        ZStack {
+            Color.gray.opacity(0.3)
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.white)
+                .shadow(radius: 5)
+        }
         .frame(maxWidth: .infinity)
         .cornerRadius(12)
     }

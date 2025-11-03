@@ -10,8 +10,8 @@ interface PostToPublish {
   post_id: string;
   user_id: string;
   caption: string;
-  media_url: string;
-  media_type: string;
+  media_urls: string[];
+  media_types: string[];
   scheduled_date: string;
 }
 
@@ -116,18 +116,19 @@ serve(async (req) => {
           continue;
         }
 
-        // Determine media type from database field
-        const isVideo = post.media_type === 'video';
+        // Determine if this is a carousel (multiple items), video, or single image
+        const isCarousel = post.media_urls.length > 1;
+        const hasVideo = post.media_types.some(type => type === 'video');
 
-        console.log(`📤 Publishing ${isVideo ? "video" : "image"} to Instagram...`);
+        console.log(`📤 Publishing to Instagram: ${isCarousel ? `carousel (${post.media_urls.length} items)` : hasVideo ? "video" : "image"}...`);
 
         // Publish to Instagram
         const publishResult = await publishToInstagram(
           igConnection.instagram_user_id,
-          post.media_url,
+          post.media_urls,
+          post.media_types,
           post.caption,
-          igConnection.access_token,
-          isVideo
+          igConnection.access_token
         );
 
         if (publishResult.success) {
@@ -194,49 +195,49 @@ serve(async (req) => {
 
 /**
  * Publish a post to Instagram via Graph API
+ * Supports single images, videos, and carousel posts (multiple images)
  */
 async function publishToInstagram(
   instagramUserId: string,
-  mediaUrl: string,
+  mediaUrls: string[],
+  mediaTypes: string[],
   caption: string,
-  accessToken: string,
-  isVideo: boolean
+  accessToken: string
 ): Promise<{ success: boolean; postId?: string; permalink?: string; error?: string }> {
   try {
-    // Step 1: Create media container
-    console.log(`   Creating ${isVideo ? "video" : "image"} container...`);
-    const containerParams = new URLSearchParams({
-      access_token: accessToken,
-      caption: caption,
-    });
-
-    if (isVideo) {
-      containerParams.append("media_type", "REELS");
-      containerParams.append("video_url", mediaUrl);
-    } else {
-      containerParams.append("image_url", mediaUrl);
-    }
-
-    const containerResponse = await fetch(
-      `${GRAPH_API_BASE_URL}/${instagramUserId}/media?${containerParams.toString()}`,
-      { method: "POST" }
-    );
-
-    if (!containerResponse.ok) {
-      const error = await containerResponse.json();
-      console.error("   ❌ Container creation failed:", error);
+    // Determine post type
+    const isCarousel = mediaUrls.length > 1;
+    const hasVideo = mediaTypes.some(type => type === 'video');
+    
+    // For now, we don't support mixed carousels with videos (Instagram limitation)
+    if (isCarousel && hasVideo) {
       return {
         success: false,
-        error: error.error?.message || "Failed to create media container",
+        error: "Carousel posts with videos are not supported yet",
       };
     }
-
-    const containerData = await containerResponse.json();
-    const containerId = containerData.id;
-    console.log(`   ✅ Container created: ${containerId}`);
-
-    // Step 2: For videos, wait for processing
-    if (isVideo) {
+    
+    let containerId: string;
+    
+    if (isCarousel) {
+      // Create carousel post
+      containerId = await createCarouselContainer(
+        instagramUserId,
+        mediaUrls,
+        caption,
+        accessToken
+      );
+    } else if (hasVideo) {
+      // Create video post
+      console.log(`   Creating video container...`);
+      containerId = await createVideoContainer(
+        instagramUserId,
+        mediaUrls[0],
+        caption,
+        accessToken
+      );
+      
+      // Wait for video processing
       console.log(`   ⏳ Waiting for video processing...`);
       const processingResult = await waitForVideoProcessing(
         containerId,
@@ -250,6 +251,15 @@ async function publishToInstagram(
         };
       }
       console.log(`   ✅ Video processing complete`);
+    } else {
+      // Create single image post
+      console.log(`   Creating image container...`);
+      containerId = await createImageContainer(
+        instagramUserId,
+        mediaUrls[0],
+        caption,
+        accessToken
+      );
     }
 
     // Step 3: Publish the container
@@ -293,6 +303,128 @@ async function publishToInstagram(
       error: error.message || "Unknown error",
     };
   }
+}
+
+/**
+ * Create a single image container
+ */
+async function createImageContainer(
+  instagramUserId: string,
+  imageUrl: string,
+  caption: string,
+  accessToken: string
+): Promise<string> {
+  const containerParams = new URLSearchParams({
+    image_url: imageUrl,
+    caption: caption,
+    access_token: accessToken,
+  });
+
+  const response = await fetch(
+    `${GRAPH_API_BASE_URL}/${instagramUserId}/media?${containerParams.toString()}`,
+    { method: "POST" }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || "Failed to create image container");
+  }
+
+  const data = await response.json();
+  console.log(`   ✅ Image container created: ${data.id}`);
+  return data.id;
+}
+
+/**
+ * Create a video container
+ */
+async function createVideoContainer(
+  instagramUserId: string,
+  videoUrl: string,
+  caption: string,
+  accessToken: string
+): Promise<string> {
+  const containerParams = new URLSearchParams({
+    media_type: "REELS",
+    video_url: videoUrl,
+    caption: caption,
+    access_token: accessToken,
+  });
+
+  const response = await fetch(
+    `${GRAPH_API_BASE_URL}/${instagramUserId}/media?${containerParams.toString()}`,
+    { method: "POST" }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || "Failed to create video container");
+  }
+
+  const data = await response.json();
+  console.log(`   ✅ Video container created: ${data.id}`);
+  return data.id;
+}
+
+/**
+ * Create a carousel container with multiple images
+ */
+async function createCarouselContainer(
+  instagramUserId: string,
+  imageUrls: string[],
+  caption: string,
+  accessToken: string
+): Promise<string> {
+  console.log(`   Creating carousel with ${imageUrls.length} images...`);
+  
+  // Step 1: Create individual containers for each image
+  const childContainerIds: string[] = [];
+  
+  for (let i = 0; i < imageUrls.length; i++) {
+    console.log(`   Creating container for image ${i + 1}/${imageUrls.length}...`);
+    
+    const itemParams = new URLSearchParams({
+      image_url: imageUrls[i],
+      is_carousel_item: "true",
+      access_token: accessToken,
+    });
+
+    const response = await fetch(
+      `${GRAPH_API_BASE_URL}/${instagramUserId}/media?${itemParams.toString()}`,
+      { method: "POST" }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || `Failed to create carousel item ${i + 1}`);
+    }
+
+    const data = await response.json();
+    childContainerIds.push(data.id);
+  }
+  
+  // Step 2: Create carousel container
+  console.log(`   Creating carousel container with ${childContainerIds.length} children...`);
+  const carouselParams = new URLSearchParams({
+    media_type: "CAROUSEL",
+    caption: caption,
+    children: childContainerIds.join(","),
+    access_token: accessToken,
+  });
+
+  const carouselResponse = await fetch(
+    `${GRAPH_API_BASE_URL}/${instagramUserId}/media?${carouselParams.toString()}`,
+    { method: "POST" }
+  );
+
+  if (!carouselResponse.ok) {
+    const error = await carouselResponse.json();
+    throw new Error(error.error?.message || "Failed to create carousel container");
+  }
+
+  const carouselData = await carouselResponse.json();
+  console.log(`   ✅ Carousel container created: ${carouselData.id}`);
+  return carouselData.id;
 }
 
 /**

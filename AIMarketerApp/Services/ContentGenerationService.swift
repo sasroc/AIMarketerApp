@@ -67,7 +67,7 @@ class ContentGenerationService {
                 let updatedPost = GeneratedPost(
                     id: post.id,
                     caption: post.caption,
-                    mediaItemId: post.mediaItemId,
+                    mediaItemIds: post.mediaItemIds,
                     scheduledDate: scheduledDate,
                     status: post.status,
                     createdAt: post.createdAt
@@ -115,9 +115,18 @@ class ContentGenerationService {
                 
                 // Generate posts for this day
                 for postIndex in 0..<postsForThisDay {
-                    let mediaItem = mediaItems[mediaIndex % mediaItems.count]
+                    // Collect media items for this post based on imagesPerPost setting
+                    let imagesPerPost = schedule.imagesPerPost
+                    var mediaItemIds: [String] = []
+                    
+                    for _ in 0..<imagesPerPost {
+                        let mediaItem = mediaItems[mediaIndex % mediaItems.count]
+                        mediaItemIds.append(mediaItem.id)
+                        mediaIndex += 1
+                    }
+                    
                     let caption = generateMockCaption(
-                        index: mediaIndex,
+                        index: postIndex,
                         marketingPlan: marketingPlan,
                         tone: marketingPlan.tone
                     )
@@ -142,13 +151,12 @@ class ContentGenerationService {
                     
                     let post = GeneratedPost(
                         caption: caption,
-                        mediaItemId: mediaItem.id,
+                        mediaItemIds: mediaItemIds,
                         scheduledDate: scheduledDate,
                         status: .pending
                     )
                     
                     posts.append(post)
-                    mediaIndex += 1
                 }
             }
             

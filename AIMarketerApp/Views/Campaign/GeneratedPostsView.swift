@@ -122,6 +122,7 @@ struct EditablePostCard: View {
     @State private var editedCaption: String
     @FocusState private var isTextEditorFocused: Bool
     @State private var showingDeleteConfirmation = false
+    @State private var currentMediaIndex = 0
     
     init(post: GeneratedPost) {
         self.post = post
@@ -203,126 +204,33 @@ struct EditablePostCard: View {
                 .cornerRadius(8)
             }
             
-            // Media preview
-            if let mediaItem = campaignViewModel.mediaItems.first(where: { $0.id == post.mediaItemId }) {
-                Group {
-                    if let thumbnail = mediaItem.thumbnail {
-                        // Display local thumbnail if available (works for both images and videos)
-                        ZStack {
-                            Image(uiImage: thumbnail)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 200)
-                                .cornerRadius(12)
-                                .allowsHitTesting(false)
-                            
-                            // Video indicator
-                            if mediaItem.type == .video {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.white)
-                                    .shadow(radius: 5)
+            // Media preview (supports carousel for multiple images)
+            let mediaItems = post.mediaItemIds.compactMap { id in
+                campaignViewModel.mediaItems.first(where: { $0.id == id })
+            }
+            
+            if !mediaItems.isEmpty {
+                VStack(spacing: 8) {
+                    // Media display
+                    MediaCarouselView(
+                        mediaItems: mediaItems,
+                        currentIndex: $currentMediaIndex
+                    )
+                    .frame(height: 200)
+                    
+                    // Carousel indicator (if multiple images)
+                    if mediaItems.count > 1 {
+                        HStack(spacing: 6) {
+                            ForEach(0..<mediaItems.count, id: \.self) { index in
+                                Circle()
+                                    .fill(currentMediaIndex == index ? Color.marketingPrimary : Color.gray.opacity(0.5))
+                                    .frame(width: 6, height: 6)
                             }
                         }
-                    } else if let cloudURL = mediaItem.cloudURL, let url = URL(string: cloudURL) {
-                        // Display from cloud URL
-                        if mediaItem.type == .image {
-                            // For images, use AsyncImage
-                            ZStack {
-                                AsyncImage(url: url) { phase in
-                                    switch phase {
-                                case .empty:
-                                    ProgressView()
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 200)
-                                        .background(Color.gray.opacity(0.3))
-                                        .cornerRadius(12)
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 200)
-                                        .cornerRadius(12)
-                                        .allowsHitTesting(false)
-                                case .failure:
-                                    VStack {
-                                        Image(systemName: "photo")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 50, height: 50)
-                                            .foregroundColor(.gray)
-                                        Text("Failed to load")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 200)
-                                    .background(Color.gray.opacity(0.3))
-                                    .cornerRadius(12)
-                                    @unknown default:
-                                        EmptyView()
-                                    }
-                                }
-                            }
-                        } else {
-                            // For videos, try to load thumbnail from thumbnailURL
-                            if let thumbnailURL = mediaItem.thumbnailURL, let thumbUrl = URL(string: thumbnailURL) {
-                                ZStack {
-                                    AsyncImage(url: thumbUrl) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            ProgressView()
-                                                .frame(maxWidth: .infinity)
-                                                .frame(height: 200)
-                                                .background(Color.gray.opacity(0.3))
-                                                .cornerRadius(12)
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(maxWidth: .infinity)
-                                                .frame(height: 200)
-                                                .cornerRadius(12)
-                                        case .failure:
-                                            videoPlaceholder
-                                        @unknown default:
-                                            EmptyView()
-                                        }
-                                    }
-                                    
-                                    // Play icon overlay
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.white)
-                                        .shadow(radius: 5)
-                                }
-                            } else {
-                                // No thumbnail URL, show placeholder
-                                videoPlaceholder
-                            }
-                        }
-                    } else {
-                        // Fallback placeholder
-                        VStack {
-                            Image(systemName: mediaItem.type == .video ? "video" : "photo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                            Text(mediaItem.type == .video ? "Video (no preview)" : "No image")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 200)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(12)
                     }
                 }
             } else {
-                // No media item found
+                // No media items found
                 VStack {
                     Image(systemName: "photo.slash")
                         .resizable()
@@ -380,19 +288,6 @@ struct EditablePostCard: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
         return formatter.string(from: post.scheduledDate)
-    }
-    
-    private var videoPlaceholder: some View {
-        ZStack {
-            Color.gray.opacity(0.3)
-            Image(systemName: "play.circle.fill")
-                .font(.system(size: 50))
-                .foregroundColor(.white)
-                .shadow(radius: 5)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 200)
-        .cornerRadius(12)
     }
 }
 

@@ -3,7 +3,7 @@ import Foundation
 struct GeneratedPost: Identifiable, Codable {
     let id: String
     var caption: String
-    var mediaItemId: String
+    var mediaItemIds: [String]  // Changed from single mediaItemId to array
     var scheduledDate: Date
     var status: PostStatus
     var createdAt: Date
@@ -14,6 +14,38 @@ struct GeneratedPost: Identifiable, Codable {
     var publishedAt: Date?
     var errorMessage: String?
     
+    // Backward compatibility - deprecated but kept for migration
+    @available(*, deprecated, message: "Use mediaItemIds instead")
+    var mediaItemId: String {
+        get { mediaItemIds.first ?? "" }
+        set { mediaItemIds = [newValue] }
+    }
+    
+    init(
+        id: String = UUID().uuidString,
+        caption: String,
+        mediaItemIds: [String],
+        scheduledDate: Date,
+        status: PostStatus = .pending,
+        createdAt: Date = Date(),
+        instagramPostId: String? = nil,
+        instagramPermalink: String? = nil,
+        publishedAt: Date? = nil,
+        errorMessage: String? = nil
+    ) {
+        self.id = id
+        self.caption = caption
+        self.mediaItemIds = mediaItemIds
+        self.scheduledDate = scheduledDate
+        self.status = status
+        self.createdAt = createdAt
+        self.instagramPostId = instagramPostId
+        self.instagramPermalink = instagramPermalink
+        self.publishedAt = publishedAt
+        self.errorMessage = errorMessage
+    }
+    
+    // Convenience init for single media item (backward compatibility)
     init(
         id: String = UUID().uuidString,
         caption: String,
@@ -26,16 +58,23 @@ struct GeneratedPost: Identifiable, Codable {
         publishedAt: Date? = nil,
         errorMessage: String? = nil
     ) {
-        self.id = id
-        self.caption = caption
-        self.mediaItemId = mediaItemId
-        self.scheduledDate = scheduledDate
-        self.status = status
-        self.createdAt = createdAt
-        self.instagramPostId = instagramPostId
-        self.instagramPermalink = instagramPermalink
-        self.publishedAt = publishedAt
-        self.errorMessage = errorMessage
+        self.init(
+            id: id,
+            caption: caption,
+            mediaItemIds: [mediaItemId],
+            scheduledDate: scheduledDate,
+            status: status,
+            createdAt: createdAt,
+            instagramPostId: instagramPostId,
+            instagramPermalink: instagramPermalink,
+            publishedAt: publishedAt,
+            errorMessage: errorMessage
+        )
+    }
+    
+    // Helper property to check if post is carousel (multiple images)
+    var isCarousel: Bool {
+        return mediaItemIds.count > 1
     }
 }
 

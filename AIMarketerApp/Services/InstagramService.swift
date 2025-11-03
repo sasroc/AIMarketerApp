@@ -402,6 +402,109 @@ class InstagramService {
         return publishResponse
     }
     
+    /// Create a carousel media container for multiple images
+    /// Returns the container ID that can be published later
+    func createCarouselContainer(
+        instagramAccountId: String,
+        imageUrls: [String],
+        caption: String,
+        accessToken: String
+    ) async throws -> String {
+        print("📸 Creating carousel with \(imageUrls.count) images...")
+        
+        // Step 1: Create individual media containers for each image
+        var childContainerIds: [String] = []
+        
+        for (index, imageUrl) in imageUrls.enumerated() {
+            print("   Creating container for image \(index + 1)/\(imageUrls.count)...")
+            let containerId = try await createCarouselItemContainer(
+                instagramAccountId: instagramAccountId,
+                imageUrl: imageUrl,
+                accessToken: accessToken
+            )
+            childContainerIds.append(containerId)
+        }
+        
+        // Step 2: Create carousel container with all children
+        print("   Creating carousel container with \(childContainerIds.count) children...")
+        var components = URLComponents(string: "\(graphAPIBaseURL)/\(instagramAccountId)/media")!
+        components.queryItems = [
+            URLQueryItem(name: "media_type", value: "CAROUSEL"),
+            URLQueryItem(name: "caption", value: caption),
+            URLQueryItem(name: "children", value: childContainerIds.joined(separator: ",")),
+            URLQueryItem(name: "access_token", value: accessToken)
+        ]
+        
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "POST"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let errorResponse = try? JSONDecoder().decode(InstagramErrorResponse.self, from: data)
+            throw InstagramError.publishFailed(errorResponse?.error.message ?? "Failed to create carousel container")
+        }
+        
+        let containerResponse = try JSONDecoder().decode(MediaContainerResponse.self, from: data)
+        print("✅ Carousel container created: \(containerResponse.id)")
+        return containerResponse.id
+    }
+    
+    /// Create a single media item container for carousel (without caption)
+    private func createCarouselItemContainer(
+        instagramAccountId: String,
+        imageUrl: String,
+        accessToken: String
+    ) async throws -> String {
+        var components = URLComponents(string: "\(graphAPIBaseURL)/\(instagramAccountId)/media")!
+        components.queryItems = [
+            URLQueryItem(name: "image_url", value: imageUrl),
+            URLQueryItem(name: "is_carousel_item", value: "true"),
+            URLQueryItem(name: "access_token", value: accessToken)
+        ]
+        
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "POST"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let errorResponse = try? JSONDecoder().decode(InstagramErrorResponse.self, from: data)
+            throw InstagramError.publishFailed(errorResponse?.error.message ?? "Failed to create carousel item")
+        }
+        
+        let containerResponse = try JSONDecoder().decode(MediaContainerResponse.self, from: data)
+        return containerResponse.id
+    }
+    
+    /// Complete workflow: Create carousel and publish (for multiple images)
+    func publishCarouselPost(
+        instagramAccountId: String,
+        imageUrls: [String],
+        caption: String,
+        accessToken: String
+    ) async throws -> PublishResponse {
+        print("📸 Creating carousel post with \(imageUrls.count) images...")
+        let containerId = try await createCarouselContainer(
+            instagramAccountId: instagramAccountId,
+            imageUrls: imageUrls,
+            caption: caption,
+            accessToken: accessToken
+        )
+        
+        print("📸 Publishing carousel...")
+        let publishResponse = try await publishMediaContainer(
+            instagramAccountId: instagramAccountId,
+            creationId: containerId,
+            accessToken: accessToken
+        )
+        
+        print("✅ Carousel published successfully: \(publishResponse.id)")
+        return publishResponse
+    }
+    
     /// Complete workflow: Create container, wait for processing, then publish (for videos)
     func publishVideoPost(
         instagramAccountId: String,

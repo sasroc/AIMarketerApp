@@ -56,7 +56,8 @@ class CampaignViewModel: ObservableObject {
             
             // Store media items that are referenced by posts
             // Use case-insensitive comparison for UUID matching
-            let mediaItemIds = Set(generatedPosts.map { $0.mediaItemId.lowercased() })
+            // Flatten all media item IDs from all posts (since posts can have multiple media items)
+            let mediaItemIds = Set(generatedPosts.flatMap { $0.mediaItemIds.map { $0.lowercased() } })
             mediaItems = allMedia.filter { mediaItemIds.contains($0.id.lowercased()) }
             print("✅ Loaded \(mediaItems.count) media items for current posts")
             _ = await statusTracker.process(posts: generatedPosts)
@@ -371,7 +372,10 @@ class CampaignViewModel: ObservableObject {
                 generatedPosts = posts.filter { post in
                     // Filter posts that belong to this campaign's media items
                     // Use case-insensitive comparison
-                    mediaItems.contains { $0.id.lowercased() == post.mediaItemId.lowercased() }
+                    // Check if any of the post's media items match campaign media items
+                    post.mediaItemIds.contains { postMediaId in
+                        mediaItems.contains { $0.id.lowercased() == postMediaId.lowercased() }
+                    }
                 }
             } catch {
                 errorMessage = "Failed to load posts: \(error.localizedDescription)"

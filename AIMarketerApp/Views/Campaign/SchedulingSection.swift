@@ -117,6 +117,47 @@ struct SchedulingSection: View {
                 )
             }
             
+            // Images per post selector
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Images Per Post")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                
+                Text("How many images to include in each post (Instagram supports up to 10)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                
+                HStack(spacing: 16) {
+                    Text("\(campaignViewModel.schedule.imagesPerPost) image\(campaignViewModel.schedule.imagesPerPost == 1 ? "" : "s")")
+                        .foregroundColor(.white)
+                        .frame(width: 80, alignment: .leading)
+                    
+                    Slider(
+                        value: Binding(
+                            get: { Double(campaignViewModel.schedule.imagesPerPost) },
+                            set: { campaignViewModel.schedule.imagesPerPost = Int($0) }
+                        ),
+                        in: 1...10,
+                        step: 1
+                    )
+                    .tint(.marketingPrimary)
+                }
+                .padding()
+                .background(Color.marketingCardBackground)
+                .cornerRadius(12)
+                
+                // Info text
+                if campaignViewModel.schedule.imagesPerPost > 1 {
+                    HStack(spacing: 8) {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.marketingPrimary)
+                        Text("Posts with multiple images will be published as Instagram carousels")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            
             // Day selector
             VStack(alignment: .leading, spacing: 12) {
                 Text("Posting Days")
