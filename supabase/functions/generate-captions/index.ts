@@ -26,6 +26,7 @@ interface PostScheduleRequest {
   selectedDays: number[]
   postsPerDay: Record<number, number>
   contentGuidelines: string
+  imagesPerPost?: number
 }
 
 interface CaptionGenerationRequest {

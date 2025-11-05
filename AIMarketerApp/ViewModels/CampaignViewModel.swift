@@ -249,6 +249,39 @@ class CampaignViewModel: ObservableObject {
         }
     }
     
+    func updatePostMedia(postId: String, newMediaItemIds: [String]) {
+        // Use case-insensitive comparison to avoid issues with UUID casing
+        if let index = generatedPosts.firstIndex(where: { 
+            $0.id.lowercased() == postId.lowercased() 
+        }) {
+            generatedPosts[index] = GeneratedPost(
+                id: generatedPosts[index].id,
+                caption: generatedPosts[index].caption,
+                mediaItemIds: newMediaItemIds,
+                scheduledDate: generatedPosts[index].scheduledDate,
+                status: generatedPosts[index].status,
+                createdAt: generatedPosts[index].createdAt,
+                instagramPostId: generatedPosts[index].instagramPostId,
+                instagramPermalink: generatedPosts[index].instagramPermalink,
+                publishedAt: generatedPosts[index].publishedAt,
+                errorMessage: generatedPosts[index].errorMessage
+            )
+            
+            // Save to database
+            let post = generatedPosts[index]
+            Task {
+                do {
+                    _ = try await supabaseService.saveGeneratedPost(post, campaignId: currentCampaignId)
+                    print("✅ Updated post media: \(newMediaItemIds)")
+                } catch {
+                    await MainActor.run {
+                        errorMessage = "Failed to save post media: \(error.localizedDescription)"
+                    }
+                }
+            }
+        }
+    }
+    
     func scheduleAllPosts() {
         // Update all posts to scheduled status
         for index in generatedPosts.indices {

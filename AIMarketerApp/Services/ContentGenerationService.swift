@@ -115,15 +115,14 @@ class ContentGenerationService {
                 
                 // Generate posts for this day
                 for postIndex in 0..<postsForThisDay {
-                    // Collect media items for this post based on imagesPerPost setting
+                    // Collect media items for this post using intelligent distribution
                     let imagesPerPost = schedule.imagesPerPost
-                    var mediaItemIds: [String] = []
-                    
-                    for _ in 0..<imagesPerPost {
-                        let mediaItem = mediaItems[mediaIndex % mediaItems.count]
-                        mediaItemIds.append(mediaItem.id)
-                        mediaIndex += 1
-                    }
+                    let mediaItemIds = intelligentMediaDistribution(
+                        mediaItems: mediaItems,
+                        imagesPerPost: imagesPerPost,
+                        currentIndex: &mediaIndex,
+                        existingPosts: posts
+                    )
                     
                     let caption = generateMockCaption(
                         index: postIndex,
@@ -193,6 +192,59 @@ class ContentGenerationService {
         caption += hashtagString
         
         return caption
+    }
+    
+    /// Intelligent media distribution algorithm
+    /// Distributes media items to avoid consecutive duplicates and maximize variety
+    private func intelligentMediaDistribution(
+        mediaItems: [MediaItem],
+        imagesPerPost: Int,
+        currentIndex: inout Int,
+        existingPosts: [GeneratedPost]
+    ) -> [String] {
+        var selectedIds: [String] = []
+        
+        // Get the last post's media to avoid immediate repetition
+        let lastPostMediaIds = existingPosts.last?.mediaItemIds ?? []
+        
+        // Create a pool of available media, shuffled for variety
+        var availableMedia = mediaItems.map { $0.id }
+        
+        // If we have more media than needed, prioritize unused or least recently used
+        if mediaItems.count >= imagesPerPost {
+            // Count usage across all posts
+            var usageCount: [String: Int] = [:]
+            for post in existingPosts {
+                for mediaId in post.mediaItemIds {
+                    usageCount[mediaId, default: 0] += 1
+                }
+            }
+            
+            // Sort by usage (least used first), then shuffle within same usage count
+            availableMedia.sort { id1, id2 in
+                let count1 = usageCount[id1] ?? 0
+                let count2 = usageCount[id2] ?? 0
+                if count1 == count2 {
+                    return Bool.random() // Randomize within same usage tier
+                }
+                return count1 < count2
+            }
+            
+            // Try to avoid images from the last post if possible
+            let notInLastPost = availableMedia.filter { !lastPostMediaIds.contains($0) }
+            if notInLastPost.count >= imagesPerPost {
+                availableMedia = notInLastPost
+            }
+        }
+        
+        // Select images for this post
+        for i in 0..<imagesPerPost {
+            let index = currentIndex % availableMedia.count
+            selectedIds.append(availableMedia[index])
+            currentIndex += 1
+        }
+        
+        return selectedIds
     }
     
 }

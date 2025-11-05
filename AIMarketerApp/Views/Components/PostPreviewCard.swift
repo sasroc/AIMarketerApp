@@ -4,6 +4,7 @@ struct PostPreviewCard: View {
     let post: GeneratedPost
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var showingDeleteConfirmation = false
+    @State private var showingMediaSelector = false
     @State private var isExpanded = false
     @State private var currentMediaIndex = 0
     
@@ -103,6 +104,21 @@ struct PostPreviewCard: View {
                         }
                     }
                     
+                    // Change Media button
+                    Button(action: { showingMediaSelector = true }) {
+                        HStack {
+                            Image(systemName: "photo.on.rectangle.angled")
+                            Text("Change Media")
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.marketingPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.marketingPrimary.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    
                     // Delete button
                     Button(action: { showingDeleteConfirmation = true }) {
                         HStack {
@@ -133,6 +149,15 @@ struct PostPreviewCard: View {
             }
         } message: {
             Text("Are you sure you want to delete this scheduled post?")
+        }
+        .sheet(isPresented: $showingMediaSelector) {
+            MediaSelectorSheet(
+                post: post,
+                maxSelection: 10
+            ) { newMediaIds in
+                campaignViewModel.updatePostMedia(postId: post.id, newMediaItemIds: newMediaIds)
+            }
+            .environmentObject(campaignViewModel)
         }
     }
     

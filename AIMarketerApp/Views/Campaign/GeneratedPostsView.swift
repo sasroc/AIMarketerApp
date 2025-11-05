@@ -122,6 +122,7 @@ struct EditablePostCard: View {
     @State private var editedCaption: String
     @FocusState private var isTextEditorFocused: Bool
     @State private var showingDeleteConfirmation = false
+    @State private var showingMediaSelector = false
     @State private var currentMediaIndex = 0
     
     init(post: GeneratedPost) {
@@ -228,6 +229,21 @@ struct EditablePostCard: View {
                             }
                         }
                     }
+                    
+                    // Change Media button
+                    Button(action: { showingMediaSelector = true }) {
+                        HStack {
+                            Image(systemName: "photo.on.rectangle.angled")
+                            Text("Change Media")
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.marketingPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.marketingPrimary.opacity(0.1))
+                        .cornerRadius(8)
+                    }
                 }
             } else {
                 // No media items found
@@ -260,6 +276,15 @@ struct EditablePostCard: View {
             }
         } message: {
             Text("Are you sure you'd like to delete this post?")
+        }
+        .sheet(isPresented: $showingMediaSelector) {
+            MediaSelectorSheet(
+                post: post,
+                maxSelection: campaignViewModel.schedule.imagesPerPost
+            ) { newMediaIds in
+                campaignViewModel.updatePostMedia(postId: post.id, newMediaItemIds: newMediaIds)
+            }
+            .environmentObject(campaignViewModel)
         }
     }
     

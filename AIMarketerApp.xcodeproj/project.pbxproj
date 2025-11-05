@@ -32,6 +32,7 @@
 		A0000015 /* SchedulingSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000015 /* SchedulingSection.swift */; };
 		A0000016 /* ContentGuidelinesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000016 /* ContentGuidelinesSection.swift */; };
 		A0000017 /* GeneratedPostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000017 /* GeneratedPostsView.swift */; };
+		A0000025 /* MediaSelectorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000025 /* MediaSelectorSheet.swift */; };
 		A0000018 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000018 /* ScheduleView.swift */; };
 		A0000019 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000019 /* ProfileView.swift */; };
 		A000001A /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001A /* CustomTextField.swift */; };
@@ -83,6 +84,7 @@
 		B0000015 /* SchedulingSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulingSection.swift; sourceTree = "<group>"; };
 		B0000016 /* ContentGuidelinesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGuidelinesSection.swift; sourceTree = "<group>"; };
 		B0000017 /* GeneratedPostsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedPostsView.swift; sourceTree = "<group>"; };
+		B0000025 /* MediaSelectorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSelectorSheet.swift; sourceTree = "<group>"; };
 		B0000018 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		B0000019 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		B000001A /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 				B0000015 /* SchedulingSection.swift */,
 				B0000016 /* ContentGuidelinesSection.swift */,
 				B0000017 /* GeneratedPostsView.swift */,
+				B0000025 /* MediaSelectorSheet.swift */,
 				CE8897632EB806AF00FA1803 /* AIImageGenerationSection.swift */,
 			);
 			path = Campaign;
@@ -368,6 +371,7 @@
 				A0000015 /* SchedulingSection.swift in Sources */,
 				A0000016 /* ContentGuidelinesSection.swift in Sources */,
 				A0000017 /* GeneratedPostsView.swift in Sources */,
+				A0000025 /* MediaSelectorSheet.swift in Sources */,
 				A0000018 /* ScheduleView.swift in Sources */,
 				A0000019 /* ProfileView.swift in Sources */,
 				A000001E /* PrivacyView.swift in Sources */,
