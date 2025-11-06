@@ -40,28 +40,30 @@ struct WelcomeView: View {
                 
                 // Action buttons
                 VStack(spacing: 16) {
-                    Button(action: { showingSignUp = true }) {
-                        Text("Get Started")
-                            .font(.headline)
-                            .foregroundColor(.marketingPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(16)
+                    Button(action: signInWithGoogle) {
+                        HStack(spacing: 12) {
+                            // Official Google logo
+                            Image("GoogleLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                            
+                            Text("Continue with Google")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                     }
+                    .disabled(authViewModel.isLoading)
+                    .opacity(authViewModel.isLoading ? 0.6 : 1)
                     
-                    Button(action: { showingSignIn = true }) {
-                        Text("Sign In")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white, lineWidth: 2)
-                            )
+                    if authViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     }
                 }
                 .padding(.horizontal, 32)
@@ -73,6 +75,12 @@ struct WelcomeView: View {
         }
         .sheet(isPresented: $showingSignUp) {
             SignUpView()
+        }
+    }
+    
+    private func signInWithGoogle() {
+        Task {
+            await authViewModel.signInWithGoogle()
         }
     }
 }

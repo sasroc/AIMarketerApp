@@ -56,6 +56,14 @@
 		A0000022 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000022 /* AppDelegate.swift */; };
 		A0000023 /* PostStatusTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000023 /* PostStatusTracker.swift */; };
 		A0000024 /* PostStatusBackgroundFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000024 /* PostStatusBackgroundFetcher.swift */; };
+		A0000026 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000026 /* UserProfile.swift */; };
+		A0000027 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000027 /* OnboardingViewModel.swift */; };
+		A0000028 /* BusinessCategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000028 /* BusinessCategorySelectionView.swift */; };
+		A0000029 /* WelcomeOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000029 /* WelcomeOnboardingView.swift */; };
+		A000002A /* WebsiteInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002A /* WebsiteInputView.swift */; };
+		A000002B /* WebsiteAnalysisLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002B /* WebsiteAnalysisLoadingView.swift */; };
+		A000002C /* BusinessAnalysisResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002C /* BusinessAnalysisResultsView.swift */; };
+		A000002D /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002D /* OnboardingFlowView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +112,14 @@
 		B0000022 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B0000023 /* PostStatusTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostStatusTracker.swift; sourceTree = "<group>"; };
 		B0000024 /* PostStatusBackgroundFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostStatusBackgroundFetcher.swift; sourceTree = "<group>"; };
+		B0000026 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		B0000027 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		B0000028 /* BusinessCategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessCategorySelectionView.swift; sourceTree = "<group>"; };
+		B0000029 /* WelcomeOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeOnboardingView.swift; sourceTree = "<group>"; };
+		B000002A /* WebsiteInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteInputView.swift; sourceTree = "<group>"; };
+		B000002B /* WebsiteAnalysisLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteAnalysisLoadingView.swift; sourceTree = "<group>"; };
+		B000002C /* BusinessAnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessAnalysisResultsView.swift; sourceTree = "<group>"; };
+		B000002D /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,6 +181,7 @@
 				B0000008 /* GeneratedPost.swift */,
 				B000001D /* DraftCampaign.swift */,
 				CEAE77252EAFCB7B00D1A777 /* InstagramConnection.swift */,
+				B0000026 /* UserProfile.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -180,6 +197,7 @@
 				E000000B /* Schedule */,
 				E000000C /* Profile */,
 				E000000D /* Components */,
+				E000000E /* Onboarding */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -189,6 +207,7 @@
 			children = (
 				B000000B /* AuthenticationViewModel.swift */,
 				B000000C /* CampaignViewModel.swift */,
+				B0000027 /* OnboardingViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -268,6 +287,19 @@
 				B000001B /* PostPreviewCard.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		E000000E /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				B0000028 /* BusinessCategorySelectionView.swift */,
+				B0000029 /* WelcomeOnboardingView.swift */,
+				B000002A /* WebsiteInputView.swift */,
+				B000002B /* WebsiteAnalysisLoadingView.swift */,
+				B000002C /* BusinessAnalysisResultsView.swift */,
+				B000002D /* OnboardingFlowView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -384,6 +416,14 @@
 				A0000022 /* AppDelegate.swift in Sources */,
 				A0000023 /* PostStatusTracker.swift in Sources */,
 				A0000024 /* PostStatusBackgroundFetcher.swift in Sources */,
+				A0000026 /* UserProfile.swift in Sources */,
+				A0000027 /* OnboardingViewModel.swift in Sources */,
+				A0000028 /* BusinessCategorySelectionView.swift in Sources */,
+				A0000029 /* WelcomeOnboardingView.swift in Sources */,
+				A000002A /* WebsiteInputView.swift in Sources */,
+				A000002B /* WebsiteAnalysisLoadingView.swift in Sources */,
+				A000002C /* BusinessAnalysisResultsView.swift in Sources */,
+				A000002D /* OnboardingFlowView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
