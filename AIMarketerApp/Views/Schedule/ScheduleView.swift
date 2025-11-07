@@ -443,14 +443,14 @@ struct SchedulePostCard: View {
                     } else {
                         // No media item found
                         VStack {
-                            Image(systemName: "photo.slash")
+                            Image(systemName: "photo")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 50, height: 50)
-                                .foregroundColor(.red)
+                                .foregroundColor(.gray)
                             Text("Media not found")
                                 .font(.caption)
-                                .foregroundColor(.red)
+                                .foregroundColor(.gray)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 200)

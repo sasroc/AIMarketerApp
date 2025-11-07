@@ -31,18 +31,29 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { prompt, mode, imageData, size }: ImageGenerationRequest = await req.json()
+    const body = await req.json()
+    console.log('Received request:', JSON.stringify({ mode: body.mode, size: body.size, promptLength: body.prompt?.length }))
+    
+    const { prompt, mode, imageData, size }: ImageGenerationRequest = body
 
     // Validate required fields
     if (!prompt || prompt.trim().length === 0) {
+      console.error('Validation error: Prompt is required')
       throw new Error('Prompt is required')
     }
 
+    if (prompt.length > 4000) {
+      console.error('Validation error: Prompt too long:', prompt.length)
+      throw new Error('Prompt must be 4000 characters or less')
+    }
+
     if (!mode || !['generate', 'edit'].includes(mode)) {
+      console.error('Validation error: Invalid mode:', mode)
       throw new Error('Mode must be either "generate" or "edit"')
     }
 
     if (mode === 'edit' && !imageData) {
+      console.error('Validation error: Image data required for edit mode')
       throw new Error('Image data is required for edit mode')
     }
 
@@ -81,26 +92,33 @@ async function generateImage(
   openaiApiKey: string
 ): Promise<ImageGenerationResponse> {
   console.log('Generating image with DALL-E 3...')
+  console.log('Prompt length:', prompt.length)
+  console.log('Size:', size)
   
   try {
+    const requestBody = {
+      model: 'dall-e-3',
+      prompt: prompt,
+      n: 1,
+      size: size,
+      quality: 'standard',
+      response_format: 'url'
+    }
+    
+    console.log('Request body:', JSON.stringify({ ...requestBody, prompt: prompt.substring(0, 100) + '...' }))
+    
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: prompt,
-        n: 1,
-        size: size,
-        quality: 'standard',
-        response_format: 'url'
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
       const errorData = await response.json()
+      console.error('OpenAI API error:', errorData)
       throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText}`)
     }
 

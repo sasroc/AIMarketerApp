@@ -18,25 +18,39 @@ class AIImageGenerationService {
             size: size.rawValue
         )
         
-        let response: ImageGenerationResponse = try await supabaseService.client.functions
-            .invoke("generate-image", options: FunctionInvokeOptions(body: request))
-        
-        // Download the image from the URL
-        guard let imageURL = URL(string: response.imageUrl) else {
-            throw AIImageError.invalidImageURL
+        do {
+            let response: ImageGenerationResponse = try await supabaseService.client.functions
+                .invoke("generate-image", options: FunctionInvokeOptions(body: request))
+            
+            // Download the image from the URL
+            guard let imageURL = URL(string: response.imageUrl) else {
+                throw AIImageError.invalidImageURL
+            }
+            
+            let (data, _) = try await URLSession.shared.data(from: imageURL)
+            guard let image = UIImage(data: data) else {
+                throw AIImageError.invalidImageData
+            }
+            
+            return GeneratedImageResult(
+                image: image,
+                imageData: data,
+                originalPrompt: prompt,
+                revisedPrompt: response.revisedPrompt
+            )
+        } catch {
+            // Try to extract error message from response
+            if let httpError = error as? any Error {
+                print("❌ Image generation HTTP error: \(httpError)")
+                
+                // Try to get more details from the error
+                let errorString = String(describing: httpError)
+                print("❌ Error string: \(errorString)")
+            }
+            
+            // Re-throw with more context
+            throw AIImageError.generationFailed(error.localizedDescription)
         }
-        
-        let (data, _) = try await URLSession.shared.data(from: imageURL)
-        guard let image = UIImage(data: data) else {
-            throw AIImageError.invalidImageData
-        }
-        
-        return GeneratedImageResult(
-            image: image,
-            imageData: data,
-            originalPrompt: prompt,
-            revisedPrompt: response.revisedPrompt
-        )
     }
     
     func editImage(prompt: String, sourceImage: UIImage) async throws -> GeneratedImageResult {

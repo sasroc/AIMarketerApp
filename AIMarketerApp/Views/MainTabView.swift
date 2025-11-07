@@ -50,7 +50,7 @@ struct MainTabView: View {
             .padding(.bottom, 49 - 26) // 49 = tab bar height, 26 = half button (52/2), positions center at top edge of tab bar
         }
         .sheet(isPresented: $showingCreateCampaign) {
-            CreateCampaignView()
+            CampaignTypeSelectionView()
                 .environmentObject(campaignViewModel)
         }
         .task {

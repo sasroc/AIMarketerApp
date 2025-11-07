@@ -64,6 +64,10 @@
 		A000002B /* WebsiteAnalysisLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002B /* WebsiteAnalysisLoadingView.swift */; };
 		A000002C /* BusinessAnalysisResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002C /* BusinessAnalysisResultsView.swift */; };
 		A000002D /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002D /* OnboardingFlowView.swift */; };
+		A000002E /* CampaignTypeSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002E /* CampaignTypeSelectionView.swift */; };
+		A000002F /* AutoGenerateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002F /* AutoGenerateView.swift */; };
+		A0000030 /* AutoGenerateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000030 /* AutoGenerateViewModel.swift */; };
+		A0000031 /* UserProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000031 /* UserProfileService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -120,6 +124,10 @@
 		B000002B /* WebsiteAnalysisLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteAnalysisLoadingView.swift; sourceTree = "<group>"; };
 		B000002C /* BusinessAnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessAnalysisResultsView.swift; sourceTree = "<group>"; };
 		B000002D /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		B000002E /* CampaignTypeSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignTypeSelectionView.swift; sourceTree = "<group>"; };
+		B000002F /* AutoGenerateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoGenerateView.swift; sourceTree = "<group>"; };
+		B0000030 /* AutoGenerateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoGenerateViewModel.swift; sourceTree = "<group>"; };
+		B0000031 /* UserProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,6 +216,7 @@
 				B000000B /* AuthenticationViewModel.swift */,
 				B000000C /* CampaignViewModel.swift */,
 				B0000027 /* OnboardingViewModel.swift */,
+				B0000030 /* AutoGenerateViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -220,6 +229,7 @@
 				B000000A1 /* SupabaseService.swift */,
 				CEAE77272EAFCBA000D1A777 /* InstagramService.swift */,
 				CE8897612EB8069300FA1803 /* AIImageGenerationService.swift */,
+				B0000031 /* UserProfileService.swift */,
 				B0000021 /* NotificationManager.swift */,
 				B0000023 /* PostStatusTracker.swift */,
 				B0000024 /* PostStatusBackgroundFetcher.swift */,
@@ -257,6 +267,8 @@
 				B0000017 /* GeneratedPostsView.swift */,
 				B0000025 /* MediaSelectorSheet.swift */,
 				CE8897632EB806AF00FA1803 /* AIImageGenerationSection.swift */,
+				B000002E /* CampaignTypeSelectionView.swift */,
+				B000002F /* AutoGenerateView.swift */,
 			);
 			path = Campaign;
 			sourceTree = "<group>";
@@ -424,6 +436,10 @@
 				A000002B /* WebsiteAnalysisLoadingView.swift in Sources */,
 				A000002C /* BusinessAnalysisResultsView.swift in Sources */,
 				A000002D /* OnboardingFlowView.swift in Sources */,
+				A000002E /* CampaignTypeSelectionView.swift in Sources */,
+				A000002F /* AutoGenerateView.swift in Sources */,
+				A0000030 /* AutoGenerateViewModel.swift in Sources */,
+				A0000031 /* UserProfileService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
