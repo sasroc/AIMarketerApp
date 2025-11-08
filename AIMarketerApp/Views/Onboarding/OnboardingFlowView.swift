@@ -10,11 +10,15 @@ struct OnboardingFlowView: View {
             case .categorySelection:
                 BusinessCategorySelectionView(viewModel: viewModel)
                     .environmentObject(authViewModel)
+            case .customCategoryInput:
+                CustomCategoryInputView(viewModel: viewModel)
+                    .environmentObject(authViewModel)
             case .welcome:
                 WelcomeOnboardingView(viewModel: viewModel)
                     .environmentObject(authViewModel)
             case .websiteInput:
                 WebsiteInputView(viewModel: viewModel)
+                    .environmentObject(authViewModel)
             case .analyzing:
                 WebsiteAnalysisLoadingView()
             case .results:

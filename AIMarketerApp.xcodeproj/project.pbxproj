@@ -64,6 +64,7 @@
 		A000002B /* WebsiteAnalysisLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002B /* WebsiteAnalysisLoadingView.swift */; };
 		A000002C /* BusinessAnalysisResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002C /* BusinessAnalysisResultsView.swift */; };
 		A000002D /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002D /* OnboardingFlowView.swift */; };
+		A0000032 /* CustomCategoryInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000032 /* CustomCategoryInputView.swift */; };
 		A000002E /* CampaignTypeSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002E /* CampaignTypeSelectionView.swift */; };
 		A000002F /* AutoGenerateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002F /* AutoGenerateView.swift */; };
 		A0000030 /* AutoGenerateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000030 /* AutoGenerateViewModel.swift */; };
@@ -124,6 +125,7 @@
 		B000002B /* WebsiteAnalysisLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteAnalysisLoadingView.swift; sourceTree = "<group>"; };
 		B000002C /* BusinessAnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessAnalysisResultsView.swift; sourceTree = "<group>"; };
 		B000002D /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		B0000032 /* CustomCategoryInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCategoryInputView.swift; sourceTree = "<group>"; };
 		B000002E /* CampaignTypeSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignTypeSelectionView.swift; sourceTree = "<group>"; };
 		B000002F /* AutoGenerateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoGenerateView.swift; sourceTree = "<group>"; };
 		B0000030 /* AutoGenerateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoGenerateViewModel.swift; sourceTree = "<group>"; };
@@ -305,6 +307,7 @@
 			isa = PBXGroup;
 			children = (
 				B0000028 /* BusinessCategorySelectionView.swift */,
+				B0000032 /* CustomCategoryInputView.swift */,
 				B0000029 /* WelcomeOnboardingView.swift */,
 				B000002A /* WebsiteInputView.swift */,
 				B000002B /* WebsiteAnalysisLoadingView.swift */,
@@ -436,6 +439,7 @@
 				A000002B /* WebsiteAnalysisLoadingView.swift in Sources */,
 				A000002C /* BusinessAnalysisResultsView.swift in Sources */,
 				A000002D /* OnboardingFlowView.swift in Sources */,
+				A0000032 /* CustomCategoryInputView.swift in Sources */,
 				A000002E /* CampaignTypeSelectionView.swift in Sources */,
 				A000002F /* AutoGenerateView.swift in Sources */,
 				A0000030 /* AutoGenerateViewModel.swift in Sources */,

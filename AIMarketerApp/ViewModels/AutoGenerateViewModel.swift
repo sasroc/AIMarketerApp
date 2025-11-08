@@ -240,48 +240,176 @@ class AutoGenerateViewModel: ObservableObject {
     private func generateImagePrompts(profile: UserProfile, count: Int) -> [String] {
         var prompts: [String] = []
         
-        // Get business category or use default
+        // Get business information
         let businessCategory = profile.businessCategory ?? "business"
+        let businessSummary = profile.businessSummary ?? ""
+        let valueProposition = profile.businessValueProposition ?? ""
+        let businessDescription = profile.businessDescription ?? ""
         
-        // Simplify brand colors - only use first 2-3 colors and keep it short
+        // Build what the image should show based on business details
+        let imageContent = determineImageContent(
+            category: businessCategory,
+            summary: businessSummary,
+            valueProposition: valueProposition,
+            description: businessDescription
+        )
+        
+        // Brand colors - use first 2-3 colors
         let brandColorsText: String
         if !profile.brandColors.isEmpty {
-            let colors = Array(profile.brandColors.prefix(2))
-            brandColorsText = "Brand colors: \(colors.joined(separator: ", ")). "
+            let colors = Array(profile.brandColors.prefix(3))
+            brandColorsText = "Use colors \(colors.joined(separator: ", ")). "
         } else {
             brandColorsText = ""
         }
         
-        // Create simpler, more focused prompts
-        // DALL-E 3 works best with concise, descriptive prompts
-        let variations = [
-            "Professional social media post for \(businessCategory) business. Modern, clean design with vibrant colors. Instagram-ready graphic.",
-            "Engaging social media content for \(businessCategory). Professional photography style, bright and appealing. Perfect for Instagram feed.",
-            "Eye-catching social media post showcasing \(businessCategory) services. Modern design, professional quality, Instagram-optimized.",
-            "Creative social media graphic for \(businessCategory) brand. Contemporary style, high-quality visual, Instagram-friendly format.",
-            "Attractive social media content featuring \(businessCategory) business. Professional design, vibrant colors, optimized for Instagram.",
-            "Modern social media post design for \(businessCategory). Clean layout, professional aesthetic, perfect for Instagram.",
-            "Engaging visual content for \(businessCategory) marketing. High-quality design, Instagram-ready format, professional style."
+        // Create natural, descriptive prompts that describe what the image should contain
+        let baseVariations = [
+            "\(brandColorsText)\(imageContent). Professional photography, modern and clean design, high quality.",
+            "\(brandColorsText)\(imageContent). Contemporary style, visually appealing, professional quality.",
+            "\(brandColorsText)\(imageContent). Eye-catching design, modern aesthetic, polished finish.",
+            "\(brandColorsText)\(imageContent). Professional composition, engaging visuals, contemporary style.",
+            "\(brandColorsText)\(imageContent). Clean design, high visual impact, modern presentation.",
+            "\(brandColorsText)\(imageContent). Compelling imagery, professional quality, visually striking.",
+            "\(brandColorsText)\(imageContent). Dynamic design, contemporary aesthetic, polished appearance."
         ]
         
-        // Use variations, repeating if needed
+        // Generate prompts
         for i in 0..<count {
-            var prompt = variations[i % variations.count]
+            var prompt = baseVariations[i % baseVariations.count]
             
-            // Add brand colors if available (keep it short)
-            if !brandColorsText.isEmpty {
-                prompt = prompt.replacingOccurrences(of: "vibrant colors", with: brandColorsText + "vibrant colors")
-            }
-            
-            // Ensure prompt is not too long (DALL-E 3 max is 4000 chars, but shorter is better)
-            if prompt.count > 500 {
-                prompt = String(prompt.prefix(500))
+            // Ensure prompt is within DALL-E 3 limits (keep under 1000 for best results)
+            if prompt.count > 1000 {
+                prompt = String(prompt.prefix(1000))
             }
             
             prompts.append(prompt)
         }
         
         return prompts
+    }
+    
+    private func determineImageContent(category: String, summary: String, valueProposition: String, description: String) -> String {
+        // Combine all business text to analyze
+        let allText = "\(summary) \(valueProposition) \(description)".lowercased()
+        let categoryLower = category.lowercased()
+        
+        // Extract what the business does (visual subject)
+        let visualSubject = extractBusinessActivity(from: allText, category: categoryLower)
+        
+        // Get the main business message (value prop or summary) - keep it concise
+        var businessMessage = ""
+        if !valueProposition.isEmpty {
+            businessMessage = cleanAndCompleteSentence(valueProposition, maxLength: 60)
+        } else if !summary.isEmpty {
+            businessMessage = extractFirstCompleteSentence(from: summary, maxLength: 60)
+        }
+        
+        // Build natural, concise prompt
+        if !businessMessage.isEmpty && businessMessage.count > 15 {
+            // Use business message as the main focus
+            return "A marketing image showcasing \(businessMessage), \(visualSubject)"
+        } else {
+            // Fallback to visual subject with category
+            return "A marketing image \(visualSubject) for a \(category.lowercased()) business"
+        }
+    }
+    
+    private func extractBusinessActivity(from text: String, category: String) -> String {
+        // Look for specific business activities and map to visual descriptions
+        let activityMap: [String: String] = [
+            "photography": "featuring professional photography work and visual storytelling",
+            "restaurant": "showing delicious food, dining atmosphere, and culinary excellence",
+            "fitness": "displaying fitness activities, wellness lifestyle, and healthy living",
+            "beauty": "featuring beauty products, skincare routines, and cosmetic services",
+            "technology": "showcasing technology solutions, digital innovation, and modern tech",
+            "real estate": "displaying properties, homes, and real estate opportunities",
+            "education": "showing learning environments, educational content, and knowledge",
+            "healthcare": "featuring healthcare services, wellness, and medical care",
+            "retail": "displaying products, shopping experience, and retail offerings",
+            "entertainment": "showing entertainment experiences, events, and fun activities",
+            "travel": "featuring travel destinations, adventures, and vacation experiences",
+            "consulting": "showcasing professional services, expertise, and business solutions",
+            "automotive": "displaying vehicles, automotive services, and car-related content",
+            "sports": "showing sports activities, athleticism, and recreation",
+            "home maintenance": "featuring home repair, maintenance services, and DIY solutions",
+            "home repair": "displaying home improvement, repair work, and maintenance",
+            "ai": "showcasing artificial intelligence, technology innovation, and smart solutions",
+            "software": "featuring software solutions, digital tools, and technology"
+        ]
+        
+        // Check for matches (case insensitive)
+        for (keyword, description) in activityMap {
+            if text.contains(keyword) || category.contains(keyword) {
+                return description
+            }
+        }
+        
+        // Generic fallback based on category
+        return "representing \(category) services and offerings"
+    }
+    
+    private func cleanAndCompleteSentence(_ text: String, maxLength: Int) -> String {
+        var cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+            .replacingOccurrences(of: "  ", with: " ")
+        
+        // Try to extract the core value proposition (remove company name if present, get to the essence)
+        // For example: "QuickFix AI offers an innovative solution for home maintenance" 
+        // -> "an innovative solution for home maintenance"
+        if let offersIndex = cleaned.lowercased().range(of: " offers ") {
+            let afterOffers = String(cleaned[offersIndex.upperBound...])
+            if !afterOffers.isEmpty && afterOffers.count < cleaned.count {
+                cleaned = afterOffers.trimmingCharacters(in: .whitespaces)
+            }
+        }
+        
+        // Remove incomplete endings (like "by", "for", "with" at the end)
+        let incompleteEndings = [" by", " for", " with", " to", " in", " on", " at"]
+        for ending in incompleteEndings {
+            if cleaned.lowercased().hasSuffix(ending) {
+                cleaned = String(cleaned.dropLast(ending.count))
+            }
+        }
+        
+        // Remove trailing periods if we're going to add more context
+        cleaned = cleaned.trimmingCharacters(in: CharacterSet(charactersIn: ". "))
+        
+        // Truncate at word boundary if needed
+        if cleaned.count > maxLength {
+            let truncated = String(cleaned.prefix(maxLength))
+            if let lastSpace = truncated.lastIndex(of: " ") {
+                cleaned = String(truncated[..<lastSpace])
+            } else {
+                cleaned = truncated
+            }
+        }
+        
+        return cleaned
+    }
+    
+    private func extractFirstCompleteSentence(from text: String, maxLength: Int) -> String {
+        let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+            .replacingOccurrences(of: "  ", with: " ")
+        
+        // Split by sentence endings
+        let sentences = cleaned.components(separatedBy: CharacterSet(charactersIn: ".!?"))
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && $0.count > 15 } // Filter out very short fragments
+        
+        // Get first complete sentence
+        if let firstSentence = sentences.first {
+            let complete = cleanAndCompleteSentence(firstSentence, maxLength: maxLength)
+            if !complete.isEmpty {
+                return complete
+            }
+        }
+        
+        // Fallback: clean the whole text
+        return cleanAndCompleteSentence(cleaned, maxLength: maxLength)
     }
     
     private func uploadImageToStorage(image: UIImage, imageData: Data, index: Int) async throws -> MediaItem {

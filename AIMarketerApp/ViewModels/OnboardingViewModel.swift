@@ -6,6 +6,7 @@ import Supabase
 class OnboardingViewModel: ObservableObject {
     @Published var currentStep: OnboardingStep = .categorySelection
     @Published var selectedCategory: String?
+    @Published var customCategory: String = ""
     @Published var websiteUrl: String = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -16,6 +17,7 @@ class OnboardingViewModel: ObservableObject {
     
     enum OnboardingStep {
         case categorySelection
+        case customCategoryInput
         case welcome
         case websiteInput
         case analyzing
@@ -44,7 +46,18 @@ class OnboardingViewModel: ObservableObject {
     
     func selectCategory(_ category: String) {
         selectedCategory = category
-        currentStep = .welcome
+        if category == "Other" {
+            currentStep = .customCategoryInput
+        } else {
+            currentStep = .welcome
+        }
+    }
+    
+    func saveCustomCategory() {
+        if !customCategory.trimmingCharacters(in: .whitespaces).isEmpty {
+            selectedCategory = customCategory.trimmingCharacters(in: .whitespaces)
+            currentStep = .welcome
+        }
     }
     
     func saveCategory() async throws {
