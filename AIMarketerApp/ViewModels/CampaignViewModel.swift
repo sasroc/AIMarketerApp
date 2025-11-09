@@ -5,6 +5,7 @@ import PhotosUI
 @MainActor
 class CampaignViewModel: ObservableObject {
     @Published var mediaItems: [MediaItem] = []
+    @Published var allSavedMediaItems: [MediaItem] = [] // All saved media items from database
     @Published var marketingPlan = MarketingPlan()
     @Published var schedule = PostSchedule()
     @Published var generatedPosts: [GeneratedPost] = []
@@ -53,6 +54,12 @@ class CampaignViewModel: ObservableObject {
             // Load all media items
             let allMedia = try await supabaseService.fetchMediaItems()
             print("✅ Loaded \(allMedia.count) media items from database")
+            
+            // Store all saved media items (for selection in upload section and change media)
+            allSavedMediaItems = allMedia
+            
+            // Load thumbnails for saved media items
+            await loadThumbnailsForSavedMedia()
             
             // Store media items that are referenced by posts
             // Use case-insensitive comparison for UUID matching
@@ -112,6 +119,73 @@ class CampaignViewModel: ObservableObject {
     
     // MARK: - Media Management
     
+    func loadAllSavedMedia() async {
+        do {
+            let allMedia = try await supabaseService.fetchMediaItems()
+            allSavedMediaItems = allMedia
+            await loadThumbnailsForSavedMedia()
+            print("✅ Loaded \(allMedia.count) saved media items")
+        } catch {
+            print("❌ Failed to load saved media: \(error.localizedDescription)")
+        }
+    }
+    
+    private func loadThumbnailsForSavedMedia() async {
+        // Load thumbnails for media items that don't have local thumbnails
+        for index in allSavedMediaItems.indices {
+            let item = allSavedMediaItems[index]
+            
+            // If item already has thumbnail data, skip
+            if item.thumbnail != nil {
+                continue
+            }
+            
+            // Try to load from thumbnail URL
+            if let thumbnailURL = item.thumbnailURL, let url = URL(string: thumbnailURL) {
+                do {
+                    let (data, _) = try await URLSession.shared.data(from: url)
+                    if let image = UIImage(data: data) {
+                        await MainActor.run {
+                            var updatedItem = allSavedMediaItems[index]
+                            updatedItem.thumbnail = image
+                            allSavedMediaItems[index] = updatedItem
+                        }
+                    }
+                } catch {
+                    // If thumbnail URL fails, try cloud URL
+                    if let cloudURL = item.cloudURL, let url = URL(string: cloudURL) {
+                        do {
+                            let (data, _) = try await URLSession.shared.data(from: url)
+                            if let image = UIImage(data: data) {
+                                await MainActor.run {
+                                    var updatedItem = allSavedMediaItems[index]
+                                    updatedItem.thumbnail = image
+                                    allSavedMediaItems[index] = updatedItem
+                                }
+                            }
+                        } catch {
+                            print("⚠️ Failed to load thumbnail for media \(item.id): \(error.localizedDescription)")
+                        }
+                    }
+                }
+            } else if let cloudURL = item.cloudURL, let url = URL(string: cloudURL) {
+                // Fallback to cloud URL if no thumbnail URL
+                do {
+                    let (data, _) = try await URLSession.shared.data(from: url)
+                    if let image = UIImage(data: data) {
+                        await MainActor.run {
+                            var updatedItem = allSavedMediaItems[index]
+                            updatedItem.thumbnail = image
+                            allSavedMediaItems[index] = updatedItem
+                        }
+                    }
+                } catch {
+                    print("⚠️ Failed to load image for media \(item.id): \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
     func addMediaItem(_ item: MediaItem) {
         guard mediaItems.count < maxMediaItems else {
             errorMessage = "Maximum \(maxMediaItems) media items allowed"
@@ -122,11 +196,15 @@ class CampaignViewModel: ObservableObject {
         // Save and upload media immediately
         Task {
             await saveAndUploadMediaItem(item)
+            // Reload saved media to include the new item
+            await loadAllSavedMedia()
         }
     }
     
     func removeMediaItem(_ item: MediaItem) {
+        // This method deletes from database - only use for newly uploaded items
         mediaItems.removeAll { $0.id == item.id }
+        allSavedMediaItems.removeAll { $0.id == item.id }
         
         // Delete from database
         Task {
@@ -138,6 +216,43 @@ class CampaignViewModel: ObservableObject {
                 print("❌ Failed to delete media: \(error.localizedDescription)")
                 errorMessage = "Failed to delete media: \(error.localizedDescription)"
             }
+        }
+    }
+    
+    func removeMediaItemFromSelection(_ item: MediaItem) {
+        // Only remove from selection, don't delete from database
+        mediaItems.removeAll { $0.id == item.id }
+    }
+    
+    func deleteMediaItemFromDatabase(_ item: MediaItem) {
+        // Remove from both selection and saved media list
+        mediaItems.removeAll { $0.id == item.id }
+        allSavedMediaItems.removeAll { $0.id == item.id }
+        
+        // Delete from database
+        Task {
+            do {
+                print("🗑️ Deleting media item from database: \(item.id)")
+                try await supabaseService.deleteMediaItem(item.id)
+                print("✅ Media item deleted from database")
+            } catch {
+                print("❌ Failed to delete media: \(error.localizedDescription)")
+                errorMessage = "Failed to delete media: \(error.localizedDescription)"
+            }
+        }
+    }
+    
+    func selectSavedMediaItem(_ item: MediaItem) {
+        // Check if item is already selected - toggle it
+        if let index = mediaItems.firstIndex(where: { $0.id == item.id }) {
+            mediaItems.remove(at: index)
+        } else {
+            // Check if we can add more items
+            guard mediaItems.count < maxMediaItems else {
+                errorMessage = "Maximum \(maxMediaItems) media items allowed"
+                return
+            }
+            mediaItems.append(item)
         }
     }
     
@@ -331,6 +446,8 @@ class CampaignViewModel: ObservableObject {
         schedule = PostSchedule()
         // Don't clear generatedPosts - they should persist and be visible on home screen
         // generatedPosts = []
+        // Don't clear allSavedMediaItems - they should persist for reuse
+        // allSavedMediaItems = []
         currentStep = 0
         currentCampaignId = nil
         errorMessage = nil

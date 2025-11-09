@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 struct MediaUploadSection: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var isLoadingSavedMedia = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -42,16 +43,62 @@ struct MediaUploadSection: View {
                 loadMedia(from: newItems)
             }
             
-            // Media grid
+            // Saved Media Section
+            if !campaignViewModel.allSavedMediaItems.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Your Saved Media")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("Tap to select from your previously uploaded media")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(campaignViewModel.allSavedMediaItems) { item in
+                                SavedMediaItemView(
+                                    item: item,
+                                    isSelected: campaignViewModel.mediaItems.contains(where: { $0.id == item.id }),
+                                    onSelect: {
+                                        campaignViewModel.selectSavedMediaItem(item)
+                                    },
+                                    onDelete: {
+                                        campaignViewModel.deleteMediaItemFromDatabase(item)
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                    }
+                }
+            }
+            
+            // Selected Media grid
             if !campaignViewModel.mediaItems.isEmpty {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 12) {
-                    ForEach(campaignViewModel.mediaItems) { item in
-                        MediaItemView(item: item) {
-                            campaignViewModel.removeMediaItem(item)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Selected Media")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 12) {
+                        ForEach(campaignViewModel.mediaItems) { item in
+                            MediaItemView(
+                                item: item,
+                                isSavedItem: campaignViewModel.allSavedMediaItems.contains(where: { $0.id == item.id })
+                            ) {
+                                // If it's a saved item, only remove from selection
+                                // Otherwise, delete from database (newly uploaded item)
+                                if campaignViewModel.allSavedMediaItems.contains(where: { $0.id == item.id }) {
+                                    campaignViewModel.removeMediaItemFromSelection(item)
+                                } else {
+                                    campaignViewModel.removeMediaItem(item)
+                                }
+                            }
                         }
                     }
                 }
@@ -64,6 +111,16 @@ struct MediaUploadSection: View {
                     .foregroundColor(.gray)
                 
                 Spacer()
+            }
+        }
+        .onAppear {
+            // Load saved media when view appears
+            if campaignViewModel.allSavedMediaItems.isEmpty {
+                Task {
+                    isLoadingSavedMedia = true
+                    await campaignViewModel.loadAllSavedMedia()
+                    isLoadingSavedMedia = false
+                }
             }
         }
     }
@@ -181,7 +238,14 @@ struct MediaUploadSection: View {
 
 struct MediaItemView: View {
     let item: MediaItem
+    let isSavedItem: Bool
     let onDelete: () -> Void
+    
+    init(item: MediaItem, isSavedItem: Bool = false, onDelete: @escaping () -> Void) {
+        self.item = item
+        self.isSavedItem = isSavedItem
+        self.onDelete = onDelete
+    }
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -207,6 +271,27 @@ struct MediaItemView: View {
                     }
                     .frame(width: 110, height: 110)
                 }
+            } else if let cloudURL = item.cloudURL, let url = URL(string: cloudURL) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 110, height: 110)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 110, height: 110)
+                            .clipped()
+                            .cornerRadius(12)
+                    case .failure:
+                        placeholderView
+                    @unknown default:
+                        placeholderView
+                    }
+                }
+            } else {
+                placeholderView
             }
             
             Button(action: onDelete) {
@@ -217,6 +302,132 @@ struct MediaItemView: View {
             }
             .padding(4)
         }
+    }
+    
+    private var placeholderView: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.gray.opacity(0.3))
+            .frame(width: 110, height: 110)
+            .overlay(
+                Image(systemName: item.type == .video ? "video" : "photo")
+                    .foregroundColor(.gray)
+            )
+    }
+}
+
+struct SavedMediaItemView: View {
+    let item: MediaItem
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onDelete: () -> Void
+    
+    @State private var showDeleteConfirmation = false
+    
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            // Select button (tappable area)
+            Button(action: onSelect) {
+                ZStack(alignment: .topTrailing) {
+                    // Media preview
+                    Group {
+                        if let thumbnail = item.thumbnail {
+                            Image(uiImage: thumbnail)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 100, height: 100)
+                                .clipped()
+                                .cornerRadius(12)
+                        } else if let cloudURL = item.cloudURL, let url = URL(string: cloudURL) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                        .frame(width: 100, height: 100)
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 100)
+                                        .clipped()
+                                        .cornerRadius(12)
+                                case .failure:
+                                    placeholderView
+                                @unknown default:
+                                    placeholderView
+                                }
+                            }
+                        } else {
+                            placeholderView
+                        }
+                    }
+                    
+                    // Selection indicator
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.marketingPrimary, lineWidth: 3)
+                            .frame(width: 100, height: 100)
+                        
+                        Circle()
+                            .fill(Color.marketingPrimary)
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 12, weight: .bold))
+                            )
+                            .padding(6)
+                    }
+                    
+                    // Video indicator
+                    if item.type == .video {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .shadow(radius: 2)
+                                Spacer()
+                            }
+                            .padding(6)
+                        }
+                        .frame(width: 100, height: 100)
+                    }
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            // Delete button (garbage can icon) - positioned at top trailing
+            Button(action: {
+                showDeleteConfirmation = true
+            }) {
+                Image(systemName: "trash")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(6)
+                    .background(Color.red.opacity(0.9))
+                    .clipShape(Circle())
+            }
+            .padding(4)
+        }
+        .alert("Delete Media", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                onDelete()
+            }
+        } message: {
+            Text("Are you sure you want to delete selected media from database?")
+        }
+    }
+    
+    private var placeholderView: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.gray.opacity(0.3))
+            .frame(width: 100, height: 100)
+            .overlay(
+                Image(systemName: item.type == .video ? "video" : "photo")
+                    .foregroundColor(.gray)
+            )
     }
 }
 

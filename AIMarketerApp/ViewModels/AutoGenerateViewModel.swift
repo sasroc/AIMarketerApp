@@ -12,7 +12,8 @@ class AutoGenerateViewModel: ObservableObject {
     @Published var generatedPosts: [GeneratedPost] = []
     
     // Track completed steps explicitly to prevent resets
-    @Published var completedSteps: Set<GenerationStep> = []
+    // Using array instead of Set for better SwiftUI change detection
+    @Published var completedSteps: [GenerationStep] = []
     
     private let userProfileService = UserProfileService.shared
     private let imageService = AIImageGenerationService.shared
@@ -28,20 +29,17 @@ class AutoGenerateViewModel: ObservableObject {
     }
     
     func generateWeekOfPosts() async {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-            completedSteps = []
-            currentStep = .loadingProfile
-            progressMessage = "Loading your business information..."
-        }
+        // Since class is @MainActor, we can update properties directly
+        isLoading = true
+        errorMessage = nil
+        completedSteps = []
+        currentStep = .loadingProfile
+        progressMessage = "Loading your business information..."
         
         do {
             // Step 1: Fetch user profile
-            await MainActor.run {
-                currentStep = .loadingProfile
-                progressMessage = "Loading your business information..."
-            }
+            currentStep = .loadingProfile
+            progressMessage = "Loading your business information..."
             
             guard let profile = try await userProfileService.fetchUserProfile() else {
                 throw AutoGenerateError.noProfileData
@@ -53,8 +51,9 @@ class AutoGenerateViewModel: ObservableObject {
             }
             
             // Mark loading profile as complete
-            await MainActor.run {
-                completedSteps.insert(.loadingProfile)
+            if !completedSteps.contains(.loadingProfile) {
+                completedSteps.append(.loadingProfile)
+                print("✅ Step completed: loadingProfile. Completed steps: \(completedSteps)")
             }
             
             // Step 2: Create marketing plan from business data
@@ -64,24 +63,30 @@ class AutoGenerateViewModel: ObservableObject {
             let schedule = createWeekSchedule()
             
             // Step 4: Generate images
-            await MainActor.run {
-                currentStep = .generatingImages
-                progressMessage = "Generating images for your posts..."
-            }
+            currentStep = .generatingImages
+            progressMessage = "Generating images for your posts..."
+            print("📸 Starting image generation. Current step: \(currentStep), Completed: \(completedSteps)")
+            
             // For testing: Generate 1 post per day (1 image)
             // TODO: Change back to 7 for full week generation
             let mediaItems = try await generateImages(profile: profile, count: 1)
             
+            print("📸 Image generation finished. Current step: \(currentStep), Completed: \(completedSteps)")
+            
             // Mark generating images as complete
-            await MainActor.run {
-                completedSteps.insert(.generatingImages)
+            if !completedSteps.contains(.generatingImages) {
+                completedSteps.append(.generatingImages)
+                print("✅ Step completed: generatingImages. Completed steps: \(completedSteps)")
             }
             
+            // Small delay to ensure UI updates
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+            
             // Step 5: Generate captions
-            await MainActor.run {
-                currentStep = .generatingCaptions
-                progressMessage = "Creating captions for your posts..."
-            }
+            currentStep = .generatingCaptions
+            progressMessage = "Creating captions for your posts..."
+            print("📝 Starting caption generation. Current step: \(currentStep), Completed: \(completedSteps)")
+            
             let posts = try await contentService.generatePosts(
                 mediaItems: mediaItems,
                 marketingPlan: marketingPlan,
@@ -89,32 +94,31 @@ class AutoGenerateViewModel: ObservableObject {
             )
             
             // Mark generating captions as complete
-            await MainActor.run {
-                completedSteps.insert(.generatingCaptions)
-                generatedPosts = posts
+            if !completedSteps.contains(.generatingCaptions) {
+                completedSteps.append(.generatingCaptions)
             }
+            generatedPosts = posts
             
             // Step 6: Save to database
-            await MainActor.run {
-                currentStep = .saving
-                progressMessage = "Saving your posts..."
-            }
+            currentStep = .saving
+            progressMessage = "Saving your posts..."
+            
             try await supabaseService.saveGeneratedPosts(posts, campaignId: nil)
             
             // Mark saving as complete
-            await MainActor.run {
-                completedSteps.insert(.saving)
-                currentStep = .completed
-                completedSteps.insert(.completed)
-                progressMessage = "All done! Generated \(posts.count) post for today." // Testing: 1 day
-                isLoading = false
+            if !completedSteps.contains(.saving) {
+                completedSteps.append(.saving)
             }
+            if !completedSteps.contains(.completed) {
+                completedSteps.append(.completed)
+            }
+            currentStep = .completed
+            progressMessage = "All done! Generated \(posts.count) post for today." // Testing: 1 day
+            isLoading = false
             
         } catch {
-            await MainActor.run {
-                errorMessage = error.localizedDescription
-                isLoading = false
-            }
+            errorMessage = error.localizedDescription
+            isLoading = false
             print("❌ Auto generation error: \(error)")
         }
     }
@@ -188,9 +192,7 @@ class AutoGenerateViewModel: ObservableObject {
     
     private func generateImages(profile: UserProfile, count: Int) async throws -> [MediaItem] {
         // Ensure we're still on generatingImages step
-        await MainActor.run {
-            currentStep = .generatingImages
-        }
+        currentStep = .generatingImages
         
         var mediaItems: [MediaItem] = []
         
@@ -198,10 +200,9 @@ class AutoGenerateViewModel: ObservableObject {
         let prompts = generateImagePrompts(profile: profile, count: count)
         
         for (index, prompt) in prompts.enumerated() {
-            await MainActor.run {
-                currentStep = .generatingImages // Keep step consistent
-                progressMessage = "Generating image \(index + 1) of \(count)..."
-            }
+            // Update progress message for each image
+            currentStep = .generatingImages
+            progressMessage = "Generating image \(index + 1) of \(count)..."
             
             do {
                 print("🖼️ Generating image \(index + 1) with prompt: \(prompt)")

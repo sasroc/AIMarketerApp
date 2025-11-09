@@ -10,6 +10,7 @@ struct MediaSelectorSheet: View {
     
     @State private var selectedMediaIds: Set<String>
     @State private var mediaUsageCount: [String: Int] = [:]
+    @State private var isLoadingSavedMedia = false
     
     init(post: GeneratedPost, maxSelection: Int = 10, onSave: @escaping ([String]) -> Void) {
         self.post = post
@@ -41,24 +42,41 @@ struct MediaSelectorSheet: View {
                         }
                         .padding(.top, 20)
                         
-                        // Media grid
-                        LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12)
-                        ], spacing: 12) {
-                            ForEach(campaignViewModel.mediaItems) { mediaItem in
-                                MediaSelectButton(
-                                    mediaItem: mediaItem,
-                                    isSelected: selectedMediaIds.contains(mediaItem.id),
-                                    usageCount: mediaUsageCount[mediaItem.id] ?? 0,
-                                    isCurrentPost: post.mediaItemIds.contains(mediaItem.id)
-                                ) {
-                                    toggleSelection(mediaItem.id)
+                        // Media grid - show all saved media items
+                        if isLoadingSavedMedia {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        } else if campaignViewModel.allSavedMediaItems.isEmpty {
+                            VStack(spacing: 12) {
+                                Image(systemName: "photo.on.rectangle")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.gray)
+                                Text("No saved media found")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                        } else {
+                            LazyVGrid(columns: [
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)
+                            ], spacing: 12) {
+                                ForEach(campaignViewModel.allSavedMediaItems) { mediaItem in
+                                    MediaSelectButton(
+                                        mediaItem: mediaItem,
+                                        isSelected: selectedMediaIds.contains(mediaItem.id),
+                                        usageCount: mediaUsageCount[mediaItem.id] ?? 0,
+                                        isCurrentPost: post.mediaItemIds.contains(mediaItem.id)
+                                    ) {
+                                        toggleSelection(mediaItem.id)
+                                    }
                                 }
                             }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
                         
                         Spacer(minLength: 100)
                     }
@@ -106,7 +124,17 @@ struct MediaSelectorSheet: View {
             }
         }
         .onAppear {
-            calculateUsageCount()
+            // Load saved media if not already loaded
+            if campaignViewModel.allSavedMediaItems.isEmpty {
+                Task {
+                    isLoadingSavedMedia = true
+                    await campaignViewModel.loadAllSavedMedia()
+                    isLoadingSavedMedia = false
+                    calculateUsageCount()
+                }
+            } else {
+                calculateUsageCount()
+            }
         }
     }
     
@@ -121,7 +149,8 @@ struct MediaSelectorSheet: View {
     }
     
     private func saveSelection() {
-        let orderedSelection = campaignViewModel.mediaItems
+        // Get selected media items from all saved media items
+        let orderedSelection = campaignViewModel.allSavedMediaItems
             .filter { selectedMediaIds.contains($0.id) }
             .map { $0.id }
         onSave(orderedSelection)
