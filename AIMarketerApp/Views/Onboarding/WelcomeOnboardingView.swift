@@ -54,37 +54,20 @@ struct WelcomeOnboardingView: View {
                         }
                         
                         Button(action: {
-                            Task {
-                                do {
-                                    try await viewModel.completeOnboarding()
-                                    // Notify that onboarding is complete
-                                    NotificationCenter.default.post(name: RootView.onboardingCompletedNotification, object: nil)
-                                } catch {
-                                    print("Error completing onboarding: \(error)")
-                                    viewModel.errorMessage = error.localizedDescription
-                                }
-                            }
+                            viewModel.currentStep = .customInfoInput
                         }) {
-                            HStack {
-                                if viewModel.isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .gray))
-                                } else {
-                                    Text("Continue without website")
-                                        .font(.headline)
-                                }
-                            }
-                            .foregroundColor(.gray)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            Text("Continue without website")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
                         }
-                        .disabled(viewModel.isLoading)
                         
                         if let errorMessage = viewModel.errorMessage {
                             Text(errorMessage)

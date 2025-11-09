@@ -22,6 +22,7 @@ class OnboardingViewModel: ObservableObject {
         case websiteInput
         case analyzing
         case results
+        case customInfoInput
     }
     
     // Business categories
@@ -216,6 +217,81 @@ class OnboardingViewModel: ObservableObject {
             ))
             .eq("user_id", value: userId.uuidString)
             .execute()
+    }
+    
+    func saveCustomBusinessInfo(
+        summary: String,
+        valueProposition: String,
+        description: String,
+        brandColors: [String],
+        logoImage: UIImage?,
+        brandImages: [UIImage]
+    ) async throws {
+        guard let userId = await getCurrentUserId() else {
+            throw OnboardingError.notAuthenticated
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        let supabase = supabaseService.client
+        
+        // Ensure profile exists first
+        try await ensureProfileExists(userId: userId)
+        
+        // Upload logo if provided
+        var logoUrl: String? = nil
+        if let logoImage = logoImage,
+           let logoData = logoImage.jpegData(compressionQuality: 0.9) {
+            let fileName = "logo-\(UUID().uuidString).jpg"
+            logoUrl = try await supabaseService.uploadMedia(
+                data: logoData,
+                fileName: fileName,
+                contentType: "image/jpeg"
+            )
+        }
+        
+        // Upload brand images
+        var brandImageUrls: [String] = []
+        for (index, image) in brandImages.enumerated() {
+            if let imageData = image.jpegData(compressionQuality: 0.9) {
+                let fileName = "brand-image-\(UUID().uuidString).jpg"
+                let url = try await supabaseService.uploadMedia(
+                    data: imageData,
+                    fileName: fileName,
+                    contentType: "image/jpeg"
+                )
+                brandImageUrls.append(url)
+            }
+        }
+        
+        // Update profile with custom business info
+        struct CustomInfoUpdate: Encodable {
+            let business_summary: String
+            let business_value_proposition: String
+            let business_description: String
+            let brand_colors: [String]
+            let logo_url: String?
+            let brand_images: [String]
+            let updated_at: String
+        }
+        
+        let formatter = ISO8601DateFormatter()
+        try await supabase
+            .from("user_profiles")
+            .update(CustomInfoUpdate(
+                business_summary: summary,
+                business_value_proposition: valueProposition,
+                business_description: description,
+                brand_colors: brandColors,
+                logo_url: logoUrl,
+                brand_images: brandImageUrls,
+                updated_at: formatter.string(from: Date())
+            ))
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+        
+        isLoading = false
     }
     
     func completeOnboarding() async throws {

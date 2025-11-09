@@ -24,6 +24,9 @@ struct OnboardingFlowView: View {
             case .results:
                 BusinessAnalysisResultsView(viewModel: viewModel)
                     .environmentObject(authViewModel)
+            case .customInfoInput:
+                CustomBusinessInfoView(viewModel: viewModel)
+                    .environmentObject(authViewModel)
             }
         }
         .onChange(of: viewModel.currentStep) { newStep in
