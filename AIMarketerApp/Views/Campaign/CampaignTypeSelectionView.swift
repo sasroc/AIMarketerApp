@@ -145,7 +145,7 @@ struct CampaignTypeSelectionView: View {
                 }
             }
             .fullScreenCover(isPresented: $showAutoGenerate) {
-                AutoGenerateView(viewModel: AutoGenerateViewModel())
+                AutoGenerateView()
                     .environmentObject(campaignViewModel)
             }
             .fullScreenCover(isPresented: $showSpecifiedGenerate) {

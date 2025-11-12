@@ -249,6 +249,7 @@ struct SchedulePostCard: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var isEditing = false
     @State private var editedCaption: String
+    @State private var editedScheduledDate: Date
     @FocusState private var isTextEditorFocused: Bool
     @State private var showingDeleteConfirmation = false
     @State private var isExpanded = false
@@ -256,6 +257,7 @@ struct SchedulePostCard: View {
     init(post: GeneratedPost) {
         self.post = post
         self._editedCaption = State(initialValue: post.caption)
+        self._editedScheduledDate = State(initialValue: post.scheduledDate)
     }
     
     var body: some View {
@@ -270,10 +272,18 @@ struct SchedulePostCard: View {
                     Image(systemName: "calendar")
                         .foregroundColor(.marketingPrimary)
                     
-                    Text(formattedDate)
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        .fontWeight(.medium)
+                    if isEditing && isExpanded {
+                        // Date picker when editing
+                        DatePicker("", selection: $editedScheduledDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(.compact)
+                            .labelsHidden()
+                            .accentColor(.marketingPrimary)
+                    } else {
+                        Text(formattedDate)
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .fontWeight(.medium)
+                    }
                     
                     Spacer()
                     
@@ -523,12 +533,15 @@ struct SchedulePostCard: View {
         if isEditing {
             // Save changes and exit edit mode
             campaignViewModel.updatePostCaption(postId: post.id, newCaption: editedCaption)
+            campaignViewModel.updatePostScheduledDate(postId: post.id, newScheduledDate: editedScheduledDate)
             isTextEditorFocused = false
             withAnimation(.easeInOut(duration: 0.2)) {
                 isEditing = false
             }
         } else {
-            // Enter edit mode
+            // Enter edit mode - reset to current post values
+            editedCaption = post.caption
+            editedScheduledDate = post.scheduledDate
             withAnimation(.easeInOut(duration: 0.2)) {
                 isEditing = true
             }
@@ -543,7 +556,7 @@ struct SchedulePostCard: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
-        return formatter.string(from: post.scheduledDate)
+        return formatter.string(from: isEditing ? editedScheduledDate : post.scheduledDate)
     }
     
     private var videoPlaceholder: some View {

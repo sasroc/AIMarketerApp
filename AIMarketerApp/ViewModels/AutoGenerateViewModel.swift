@@ -29,31 +29,56 @@ class AutoGenerateViewModel: ObservableObject {
     }
     
     func generateWeekOfPosts() async {
+        // Prevent multiple simultaneous calls
+        guard !isLoading else {
+            print("⚠️ Generation already in progress, skipping duplicate call")
+            return
+        }
+        
         // Since class is @MainActor, we can update properties directly
         isLoading = true
         errorMessage = nil
-        completedSteps = []
-        currentStep = .loadingProfile
-        progressMessage = "Loading your business information..."
         
-        do {
-            // Step 1: Fetch user profile
+        // Only reset if we're truly starting fresh (no progress made yet)
+        // Preserve completed steps if we're resuming
+        let wasStartingFresh = completedSteps.isEmpty && currentStep == .loadingProfile && generatedPosts.isEmpty
+        if wasStartingFresh {
+            completedSteps = []
             currentStep = .loadingProfile
             progressMessage = "Loading your business information..."
-            
-            guard let profile = try await userProfileService.fetchUserProfile() else {
-                throw AutoGenerateError.noProfileData
-            }
-            
-            guard let businessSummary = profile.businessSummary,
-                  !businessSummary.isEmpty else {
-                throw AutoGenerateError.insufficientData
-            }
-            
-            // Mark loading profile as complete
+        } else {
+            // Resuming - don't reset, just continue from where we left off
+            print("🔄 Resuming generation. Current step: \(currentStep), Completed: \(completedSteps)")
+        }
+        
+        do {
+            // Step 1: Fetch user profile (only if not already completed)
+            let profile: UserProfile
             if !completedSteps.contains(.loadingProfile) {
+                currentStep = .loadingProfile
+                progressMessage = "Loading your business information..."
+                
+                guard let fetchedProfile = try await userProfileService.fetchUserProfile() else {
+                    throw AutoGenerateError.noProfileData
+                }
+                
+                guard let businessSummary = fetchedProfile.businessSummary,
+                      !businessSummary.isEmpty else {
+                    throw AutoGenerateError.insufficientData
+                }
+                
+                profile = fetchedProfile
+                
+                // Mark loading profile as complete
                 completedSteps.append(.loadingProfile)
                 print("✅ Step completed: loadingProfile. Completed steps: \(completedSteps)")
+            } else {
+                // Already completed, but we still need the profile for next steps
+                print("⏭️ Skipping loadingProfile (already completed), fetching profile for next steps...")
+                guard let fetchedProfile = try await userProfileService.fetchUserProfile() else {
+                    throw AutoGenerateError.noProfileData
+                }
+                profile = fetchedProfile
             }
             
             // Step 2: Create marketing plan from business data
@@ -62,21 +87,27 @@ class AutoGenerateViewModel: ObservableObject {
             // Step 3: Create schedule for one week
             let schedule = createWeekSchedule()
             
-            // Step 4: Generate images
-            currentStep = .generatingImages
-            progressMessage = "Generating images for your posts..."
-            print("📸 Starting image generation. Current step: \(currentStep), Completed: \(completedSteps)")
-            
-            // For testing: Generate 1 post per day (1 image)
-            // TODO: Change back to 7 for full week generation
-            let mediaItems = try await generateImages(profile: profile, count: 1)
-            
-            print("📸 Image generation finished. Current step: \(currentStep), Completed: \(completedSteps)")
-            
-            // Mark generating images as complete
+            // Step 4: Generate images (only if not already completed)
+            let mediaItems: [MediaItem]
             if !completedSteps.contains(.generatingImages) {
+                currentStep = .generatingImages
+                progressMessage = "Generating images for your posts..."
+                print("📸 Starting image generation. Current step: \(currentStep), Completed: \(completedSteps)")
+                
+                // For testing: Generate 1 post per day (1 image)
+                // TODO: Change back to 7 for full week generation
+                mediaItems = try await generateImages(profile: profile, count: 1)
+                
+                print("📸 Image generation finished. Current step: \(currentStep), Completed: \(completedSteps)")
+                
+                // Mark generating images as complete
                 completedSteps.append(.generatingImages)
                 print("✅ Step completed: generatingImages. Completed steps: \(completedSteps)")
+            } else {
+                // Images already generated - this shouldn't happen in normal flow, but handle it
+                print("⏭️ Skipping image generation (already completed)")
+                // We'd need to reload media items from somewhere, but for now throw error
+                throw AutoGenerateError.imageGenerationFailed
             }
             
             // Small delay to ensure UI updates

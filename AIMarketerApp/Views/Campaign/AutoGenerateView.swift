@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct AutoGenerateView: View {
-    @ObservedObject var viewModel: AutoGenerateViewModel
+    @StateObject private var viewModel = AutoGenerateViewModel()
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var showGeneratedPosts = false
     @State private var shouldDismissToHome = false
+    @State private var hasStartedGeneration = false
     
     var body: some View {
         NavigationStack {
@@ -170,7 +171,9 @@ struct AutoGenerateView: View {
                 }
             }
             .task {
-                if viewModel.generatedPosts.isEmpty {
+                // Only start generation once
+                if !hasStartedGeneration && !viewModel.isLoading && viewModel.generatedPosts.isEmpty {
+                    hasStartedGeneration = true
                     await viewModel.generateWeekOfPosts()
                 }
             }
@@ -234,7 +237,7 @@ struct ProgressStepRow: View {
 }
 
 #Preview {
-    AutoGenerateView(viewModel: AutoGenerateViewModel())
+    AutoGenerateView()
         .environmentObject(CampaignViewModel())
 }
 

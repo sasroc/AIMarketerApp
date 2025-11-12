@@ -81,10 +81,17 @@ class CampaignViewModel: ObservableObject {
         do {
             let updatedPosts = try await supabaseService.fetchGeneratedPosts()
             let changes = await statusTracker.process(posts: updatedPosts)
+            let hadNewPosts = !changes.isEmpty && changes.contains { $0.post.status == .posted }
             generatedPosts = updatedPosts
             lastRefreshTime = Date()
             for change in changes {
                 notificationManager.sendPostStatusNotification(for: change.post, previousStatus: change.previousStatus)
+            }
+            
+            // Notify analytics view model if new posts were published
+            if hadNewPosts {
+                // Post a notification that analytics should refresh
+                NotificationCenter.default.post(name: NSNotification.Name("PostsStatusChanged"), object: nil)
             }
         } catch {
             print("❌ Failed to refresh posts: \(error.localizedDescription)")
@@ -358,6 +365,97 @@ class CampaignViewModel: ObservableObject {
                 do {
                     _ = try await supabaseService.saveGeneratedPost(post, campaignId: currentCampaignId)
                 } catch {
+                    errorMessage = "Failed to save post: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    func updatePostScheduledDate(postId: String, newScheduledDate: Date) {
+        // Use case-insensitive comparison to avoid issues with UUID casing
+        if let index = generatedPosts.firstIndex(where: { 
+            $0.id.lowercased() == postId.lowercased() 
+        }) {
+            // Create updated post with all fields preserved, especially mediaItemIds
+            let currentPost = generatedPosts[index]
+            
+            // If mediaItemIds is empty, reload from database to ensure we have the associations
+            var mediaItemIds = currentPost.mediaItemIds
+            if mediaItemIds.isEmpty {
+                print("⚠️ Post has no mediaItemIds in memory, reloading from database...")
+                Task {
+                    do {
+                        // Reload all posts to get fresh data
+                        let allPosts = try await supabaseService.fetchGeneratedPosts()
+                        if let reloadedPost = allPosts.first(where: { $0.id.lowercased() == postId.lowercased() }) {
+                            mediaItemIds = reloadedPost.mediaItemIds
+                            print("✅ Reloaded post, found \(mediaItemIds.count) media items")
+                            
+                            // Now update with the reloaded mediaItemIds
+                            let updatedPost = GeneratedPost(
+                                id: currentPost.id,
+                                caption: currentPost.caption,
+                                mediaItemIds: mediaItemIds,
+                                scheduledDate: newScheduledDate,
+                                status: currentPost.status,
+                                createdAt: currentPost.createdAt,
+                                instagramPostId: currentPost.instagramPostId,
+                                instagramPermalink: currentPost.instagramPermalink,
+                                publishedAt: currentPost.publishedAt,
+                                errorMessage: currentPost.errorMessage
+                            )
+                            
+                            // Update in-memory post
+                            await MainActor.run {
+                                if let newIndex = generatedPosts.firstIndex(where: { $0.id.lowercased() == postId.lowercased() }) {
+                                    generatedPosts[newIndex] = updatedPost
+                                }
+                            }
+                            
+                            // Save to database
+                            _ = try await supabaseService.saveGeneratedPost(updatedPost, campaignId: currentCampaignId)
+                            print("✅ Updated post scheduled date: \(newScheduledDate)")
+                            print("✅ Post has \(updatedPost.mediaItemIds.count) media items")
+                        } else {
+                            print("❌ Could not find post in database after reload")
+                            await MainActor.run {
+                                errorMessage = "Failed to reload post from database"
+                            }
+                        }
+                    } catch {
+                        print("❌ Failed to reload post: \(error.localizedDescription)")
+                        await MainActor.run {
+                            errorMessage = "Failed to save post: \(error.localizedDescription)"
+                        }
+                    }
+                }
+                return
+            }
+            
+            let updatedPost = GeneratedPost(
+                id: currentPost.id,
+                caption: currentPost.caption,
+                mediaItemIds: mediaItemIds,
+                scheduledDate: newScheduledDate,
+                status: currentPost.status,
+                createdAt: currentPost.createdAt,
+                instagramPostId: currentPost.instagramPostId,
+                instagramPermalink: currentPost.instagramPermalink,
+                publishedAt: currentPost.publishedAt,
+                errorMessage: currentPost.errorMessage
+            )
+            
+            // Update in-memory post
+            generatedPosts[index] = updatedPost
+            
+            // Save to database
+            Task {
+                do {
+                    _ = try await supabaseService.saveGeneratedPost(updatedPost, campaignId: currentCampaignId)
+                    print("✅ Updated post scheduled date: \(newScheduledDate)")
+                    print("✅ Post has \(updatedPost.mediaItemIds.count) media items")
+                } catch {
+                    print("❌ Failed to update post scheduled date: \(error.localizedDescription)")
                     errorMessage = "Failed to save post: \(error.localizedDescription)"
                 }
             }

@@ -116,17 +116,40 @@ serve(async (req) => {
           continue;
         }
 
-        // Determine if this is a carousel (multiple items), video, or single image
-        const isCarousel = post.media_urls.length > 1;
-        const hasVideo = post.media_types.some(type => type === 'video');
+        // Validate and filter media URLs
+        const validMediaUrls = (post.media_urls || []).filter(
+          (url: string | null | undefined) => url && url.trim() !== '' && url !== 'undefined' && url !== 'null'
+        );
+        const validMediaTypes = (post.media_types || []).filter(
+          (type: string | null | undefined, index: number) => 
+            type && validMediaUrls[index] // Only include types for valid URLs
+        );
 
-        console.log(`📤 Publishing to Instagram: ${isCarousel ? `carousel (${post.media_urls.length} items)` : hasVideo ? "video" : "image"}...`);
+        if (validMediaUrls.length === 0) {
+          console.error(`❌ Post ${post.post_id} has no valid media URLs. Received:`, post.media_urls);
+          await updatePostFailed(
+            supabase,
+            post.post_id,
+            "Post has no valid media URLs. Please check media associations."
+          );
+          results.failed++;
+          results.errors.push(`Post ${post.post_id}: No valid media URLs`);
+          continue;
+        }
+
+        console.log(`📤 Publishing to Instagram: ${validMediaUrls.length} media item(s)`);
+        console.log(`   Media URLs:`, validMediaUrls);
+        console.log(`   Media Types:`, validMediaTypes);
+
+        // Determine if this is a carousel (multiple items), video, or single image
+        const isCarousel = validMediaUrls.length > 1;
+        const hasVideo = validMediaTypes.some(type => type === 'video');
 
         // Publish to Instagram
         const publishResult = await publishToInstagram(
           igConnection.instagram_user_id,
-          post.media_urls,
-          post.media_types,
+          validMediaUrls,
+          validMediaTypes,
           post.caption,
           igConnection.access_token
         );
@@ -254,6 +277,9 @@ async function publishToInstagram(
     } else {
       // Create single image post
       console.log(`   Creating image container...`);
+      if (!mediaUrls[0]) {
+        throw new Error("No media URL provided for image post");
+      }
       containerId = await createImageContainer(
         instagramUserId,
         mediaUrls[0],
@@ -314,6 +340,13 @@ async function createImageContainer(
   caption: string,
   accessToken: string
 ): Promise<string> {
+  // Validate image URL
+  if (!imageUrl || imageUrl.trim() === '' || imageUrl === 'undefined' || imageUrl === 'null') {
+    throw new Error(`Invalid image URL: ${imageUrl}`);
+  }
+
+  console.log(`   Using image URL: ${imageUrl}`);
+  
   const containerParams = new URLSearchParams({
     image_url: imageUrl,
     caption: caption,

@@ -120,6 +120,7 @@ struct EditablePostCard: View {
     @EnvironmentObject var campaignViewModel: CampaignViewModel
     @State private var isEditing = false
     @State private var editedCaption: String
+    @State private var editedScheduledDate: Date
     @FocusState private var isTextEditorFocused: Bool
     @State private var showingDeleteConfirmation = false
     @State private var showingMediaSelector = false
@@ -128,52 +129,64 @@ struct EditablePostCard: View {
     init(post: GeneratedPost) {
         self.post = post
         self._editedCaption = State(initialValue: post.caption)
+        self._editedScheduledDate = State(initialValue: post.scheduledDate)
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Date and buttons
-            HStack(spacing: 8) {
-                Image(systemName: "calendar")
-                    .foregroundColor(.marketingPrimary)
-                Text(formattedDate)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
+            VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
-                    // Edit button
-                    Button(action: {
-                        toggleEdit()
-                    }) {
-                        Text(isEditing ? "Done" : "Edit")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.marketingPrimary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.marketingPrimary.opacity(0.15))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                    Image(systemName: "calendar")
+                        .foregroundColor(.marketingPrimary)
                     
-                    // Delete button
-                    Button(action: {
-                        showingDeleteConfirmation = true
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.marketingError)
-                            .font(.system(size: 16, weight: .medium))
-                            .padding(8)
-                            .background(Color.marketingError.opacity(0.1))
-                            .cornerRadius(6)
+                    if isEditing {
+                        // Date picker when editing
+                        DatePicker("", selection: $editedScheduledDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(.compact)
+                            .labelsHidden()
+                            .accentColor(.marketingPrimary)
+                    } else {
+                        Text(formattedDate)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 8) {
+                        // Edit button
+                        Button(action: {
+                            toggleEdit()
+                        }) {
+                            Text(isEditing ? "Done" : "Edit")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.marketingPrimary)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.marketingPrimary.opacity(0.15))
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.marketingPrimary.opacity(0.3), lineWidth: 1)
+                                )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        // Delete button
+                        Button(action: {
+                            showingDeleteConfirmation = true
+                        }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.marketingError)
+                                .font(.system(size: 16, weight: .medium))
+                                .padding(8)
+                                .background(Color.marketingError.opacity(0.1))
+                                .cornerRadius(6)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
             }
             
@@ -292,12 +305,15 @@ struct EditablePostCard: View {
         if isEditing {
             // Save changes and exit edit mode
             campaignViewModel.updatePostCaption(postId: post.id, newCaption: editedCaption)
+            campaignViewModel.updatePostScheduledDate(postId: post.id, newScheduledDate: editedScheduledDate)
             isTextEditorFocused = false
             withAnimation(.easeInOut(duration: 0.2)) {
                 isEditing = false
             }
         } else {
-            // Enter edit mode
+            // Enter edit mode - reset to current post values
+            editedCaption = post.caption
+            editedScheduledDate = post.scheduledDate
             withAnimation(.easeInOut(duration: 0.2)) {
                 isEditing = true
             }
@@ -312,8 +328,9 @@ struct EditablePostCard: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
-        return formatter.string(from: post.scheduledDate)
+        return formatter.string(from: isEditing ? editedScheduledDate : post.scheduledDate)
     }
+    
 }
 
 // Simple TextEditor that works reliably

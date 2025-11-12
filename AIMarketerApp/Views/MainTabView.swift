@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @StateObject private var campaignViewModel = CampaignViewModel()
+    @StateObject private var analyticsViewModel = AnalyticsViewModel()
     @State private var showingCreateCampaign = false
     @State private var hasRequestedNotifications = false
     
@@ -24,6 +25,7 @@ struct MainTabView: View {
                     }
             }
             .environmentObject(campaignViewModel)
+            .environmentObject(analyticsViewModel)
             .tint(.marketingPrimary)
             
             // + button attached to top right of tab bar

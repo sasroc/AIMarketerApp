@@ -6,7 +6,7 @@ import UIKit
 class InstagramService {
     static let shared = InstagramService()
     
-    private let graphAPIBaseURL = "https://graph.facebook.com/v18.0"
+    private let graphAPIBaseURL = "https://graph.facebook.com/v22.0"
     
     // MARK: - Configuration
     // These should be loaded from Config.plist
@@ -38,11 +38,11 @@ class InstagramService {
     
     /// Generate the Facebook OAuth URL for Instagram permissions
     func getAuthorizationURL() -> URL? {
-        var components = URLComponents(string: "https://www.facebook.com/v18.0/dialog/oauth")
+        var components = URLComponents(string: "https://www.facebook.com/v22.0/dialog/oauth")
         components?.queryItems = [
             URLQueryItem(name: "client_id", value: facebookAppId),
             URLQueryItem(name: "redirect_uri", value: redirectURI),
-            URLQueryItem(name: "scope", value: "instagram_basic,instagram_content_publish,pages_read_engagement,pages_show_list,business_management"),
+            URLQueryItem(name: "scope", value: "instagram_basic,instagram_content_publish,instagram_manage_insights,pages_read_engagement,pages_show_list,business_management"),
             URLQueryItem(name: "response_type", value: "code"),
             URLQueryItem(name: "state", value: UUID().uuidString) // CSRF protection
         ]
@@ -553,6 +553,147 @@ class InstagramService {
         throw InstagramError.publishFailed("Video processing timeout")
     }
     
+    // MARK: - Analytics & Insights
+    
+    /// Fetch analytics/insights for an Instagram media post
+    /// Returns analytics data including impressions, reach, engagement metrics
+    func fetchMediaInsights(
+        mediaId: String,
+        accessToken: String
+    ) async throws -> InstagramAnalytics {
+        // Request multiple metrics in a single call
+        // Note: Starting from v22.0, "impressions" is no longer supported
+        // Valid metrics: reach, likes, comments, saved, shares, total_interactions
+        let metrics = [
+            "reach",
+            "likes",
+            "comments",
+            "saved",  // Note: API uses "saved" not "saves"
+            "shares",
+            "total_interactions"
+        ].joined(separator: ",")
+        
+        var components = URLComponents(string: "\(graphAPIBaseURL)/\(mediaId)/insights")!
+        components.queryItems = [
+            URLQueryItem(name: "metric", value: metrics),
+            URLQueryItem(name: "access_token", value: accessToken)
+        ]
+        
+        print("🔍 Fetching insights for media: \(mediaId)")
+        let (data, response) = try await URLSession.shared.data(from: components.url!)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("❌ Insights API Error: \(jsonString)")
+            }
+            throw InstagramError.analyticsFailed("Failed to fetch insights")
+        }
+        
+        // Parse insights response
+        let insightsResponse = try JSONDecoder().decode(InstagramInsightsResponse.self, from: data)
+        
+        // Extract metrics from response
+        var impressions = 0
+        var reach = 0
+        var likes = 0
+        var comments = 0
+        var saves = 0
+        var shares = 0
+        var profileVisits = 0
+        var websiteClicks = 0
+        
+        for insight in insightsResponse.data {
+            // Get the latest value (usually the first one, but check all)
+            guard let firstValue = insight.values.first else { continue }
+            
+            // Extract integer value from the insight
+            let metricValue: Int
+            switch firstValue.value {
+            case .int(let value):
+                metricValue = value
+            case .dict(let dict):
+                // Some metrics return a dictionary with breakdowns, sum all values
+                metricValue = dict.values.reduce(0, +)
+            case .string(let str):
+                // Try to parse string as integer
+                metricValue = Int(str) ?? 0
+            }
+            
+            switch insight.name {
+            case "impressions":
+                impressions = metricValue
+            case "reach":
+                reach = metricValue
+            case "likes":
+                likes = metricValue
+            case "comments":
+                comments = metricValue
+            case "saved":  // API returns "saved" not "saves"
+                saves = metricValue
+            case "shares":
+                shares = metricValue
+            case "total_interactions":
+                // Total interactions is a calculated metric, we can use it to verify our sum
+                // But we don't store it separately since we calculate engagement from individual metrics
+                break
+            case "profile_visits":
+                profileVisits = metricValue
+            case "website_clicks":
+                websiteClicks = metricValue
+            default:
+                break
+            }
+        }
+        
+        // Calculate impressions from reach if available, or use 0
+        // Note: Impressions not available in v22.0+, using reach as approximation
+        let calculatedImpressions = impressions > 0 ? impressions : reach
+        
+        print("✅ Fetched insights: reach=\(reach), likes=\(likes), comments=\(comments), saved=\(saves), shares=\(shares)")
+        
+        return InstagramAnalytics(
+            id: mediaId,
+            postId: "", // Will be set by caller
+            impressions: calculatedImpressions, // Use reach as approximation since impressions not available
+            reach: reach,
+            likes: likes,
+            comments: comments,
+            saves: saves,
+            shares: shares,
+            profileVisits: profileVisits,
+            websiteClicks: websiteClicks
+        )
+    }
+    
+    /// Fetch analytics for multiple media posts in batch
+    func fetchMultipleMediaInsights(
+        mediaIds: [String],
+        accessToken: String
+    ) async throws -> [InstagramAnalytics] {
+        var analytics: [InstagramAnalytics] = []
+        
+        // Fetch insights for each media ID
+        // Note: Instagram Graph API doesn't support batch insights, so we fetch individually
+        // Add small delay to avoid rate limiting
+        for (index, mediaId) in mediaIds.enumerated() {
+            if index > 0 {
+                // Small delay between requests (50ms)
+                try await Task.sleep(nanoseconds: 50_000_000)
+            }
+            
+            do {
+                let insight = try await fetchMediaInsights(mediaId: mediaId, accessToken: accessToken)
+                analytics.append(insight)
+            } catch {
+                print("⚠️ Failed to fetch insights for media \(mediaId): \(error.localizedDescription)")
+                // Continue with other media even if one fails
+            }
+        }
+        
+        return analytics
+    }
+    
     // MARK: - Token Management
     
     /// Refresh an existing long-lived token
@@ -662,6 +803,7 @@ enum InstagramError: LocalizedError {
     case publishFailed(String)
     case tokenExpired
     case invalidMediaURL
+    case analyticsFailed(String)
     
     var errorDescription: String? {
         switch self {
@@ -675,6 +817,8 @@ enum InstagramError: LocalizedError {
             return "Instagram access token has expired. Please reconnect your account."
         case .invalidMediaURL:
             return "Invalid media URL provided"
+        case .analyticsFailed(let message):
+            return "Failed to fetch analytics: \(message)"
         }
     }
 }
